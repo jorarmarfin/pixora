@@ -29,10 +29,10 @@ Uso: tokens en `tailwind.config` / variables CSS shadcn; modo oscuro = base de m
 **Nota sobre el logo:** la raíz contiene el manual de marca (PNG compuesto), **no** el `logo.png` cuadrado que pide el spec (§4). Hay que recortar el icono principal a `logo.png` 1024×1024 (idealmente pedir el original con transparencia). Mientras tanto se usa un recorte provisional.
 
 ## Estado Actual
-- **Fase activa**: Fase 2 — UI, importación y modelo de trabajos
-- **Progreso**: 1 de 7 fases completadas
+- **Fase activa**: Fase 3 — Conversión y optimización individual
+- **Progreso**: 2 de 7 fases completadas
 - **Bloqueadores**: `libvips` y cabeceras no instalados (`pkg-config vips` falla). Instalar `libvips-dev` antes de Fase 3 (no bloquea Fase 1–2; `run.sh` solo exigirá vips desde Fase 3). Repo git sin commits.
-- **Próximo paso concreto**: modelos de dominio (`ImageJob`, `JobStatus`) + comando `import_paths` y drag&drop con tauri-plugin-dialog.
+- **Próximo paso concreto**: instalar `libvips-dev` (`sudo apt install -y libvips-dev`), spike del binding Rust de libvips (0.5 día) y trait `ImageEngine`.
 
 Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-config 1.8.1, webkit2gtk-4.1 OK, libvips FALTA.
 
@@ -91,7 +91,7 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 
 ---
 
-## Fase 2: UI, importación y modelo de trabajos — PENDIENTE
+## Fase 2: UI, importación y modelo de trabajos — COMPLETADA
 
 **Duración estimada**: 5 días
 **Objetivo**: pantalla principal funcional con importación (archivos, carpeta, drag&drop), listado con miniaturas/metadatos y modelo de cola/estados (aún sin convertir).
@@ -103,33 +103,33 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 ### Entregables (Definición de Done)
 
 #### Backend (Rust)
-- [ ] Modelos de dominio: `ImageJob`, `JobResult`, `JobStatus` (`queued|validating|processing|completed|failed|cancelled|skipped`), errores estructurados
-- [ ] Comandos: `import_paths` (archivos/carpetas, recursivo opcional), `read_image_meta` (dimensiones, formato, peso, ruta)
-- [ ] Generación de miniaturas en Rust (en hilos, no en React); caché temporal
-- [ ] Validación y canonicalización de rutas (espacios, Unicode)
-- [ ] Tipos compartidos Rust→TS (p. ej. `ts-rs`/`specta`)
+- [x] Modelos de dominio: `ImageJob`, `JobResult`, `JobStatus` (`queued|validating|processing|completed|failed|cancelled|skipped`), errores estructurados
+- [x] Comandos: `import_paths` (archivos/carpetas, recursivo opcional), `read_image_meta` (dimensiones, formato, peso, ruta)
+- [x] Generación de miniaturas en Rust (en hilos, no en React); caché temporal
+- [x] Validación y canonicalización de rutas (espacios, Unicode)
+- [x] Tipos compartidos Rust→TS (p. ej. `ts-rs`/`specta`)
 
 #### Frontend
-- [ ] Zona drag&drop (archivos y carpetas) + selector nativo
-- [ ] Tabla/lista virtualizada con miniatura, nombre, dimensiones, formato, peso, ruta, estado
-- [ ] Panel de ajustes (formato destino, calidad, dimensiones, metadatos, carpeta de salida) — solo UI/estado
-- [ ] Zustand: store de cola reflejado desde eventos Tauri
-- [ ] Selección/eliminación de ítems de la lista
+- [x] Zona drag&drop (archivos y carpetas) + selector nativo
+- [x] Tabla/lista virtualizada con miniatura, nombre, dimensiones, formato, peso, ruta, estado
+- [x] Panel de ajustes (formato destino, calidad, dimensiones, metadatos, carpeta de salida) — solo UI/estado
+- [x] Zustand: store de cola reflejado desde eventos Tauri
+- [x] Selección/eliminación de ítems de la lista
 
 #### Tests
-- [ ] Unit: filtrado de extensiones, recorrido de carpetas, rutas Unicode/espacios
-- [ ] Componentes: lista, drop zone, panel
-- [ ] Rendimiento: 100 archivos sin bloquear UI
+- [x] Unit: filtrado de extensiones, recorrido de carpetas, rutas Unicode/espacios
+- [x] Componentes: lista, drop zone, panel
+- [x] Rendimiento: 100 archivos sin bloquear UI
 
 #### Documentación
-- [ ] Contrato de comandos/eventos (`docs/ipc.md`)
+- [x] Contrato de comandos/eventos (`docs/ipc.md`)
 
 ### Posibles obstáculos
 - Eventos drag&drop de Tauri 2 vs HTML5 DnD: usar el de Tauri para rutas reales.
 - Miniaturas masivas: límite de concurrencia y lazy load. Sin libvips aún → usar crate `image` temporal tras el trait del motor, o adelantar el adaptador vips.
 
 ### Notas de avance
-- 
+- 2026-11-10: metadatos con `imagesize` (solo cabecera), miniaturas con crate `image` (+EXIF) temporal hasta el motor vips. Lista virtualizada con @tanstack/react-virtual. Dominio incluye ya el contrato `ImageJob` (sin motor). Tests: cargo 11/11 (incl. lote de 100, Unicode/espacios, corrupto, symlink-safe), Vitest 15/15 (incl. 100 ítems, filas virtualizadas), clippy/lint/typecheck/build OK, `./run.sh` arranca. Limitaciones: miniatura decodifica la imagen completa (aceptable ahora; revisar en Fase 6 con 1000 imágenes); drag&drop real y diálogos nativos NO probados de forma automatizada, requieren prueba manual; sin verificación visual de la ventana.
 
 **Aceptación**: 100 archivos se agregan a la lista sin bloquear la interfaz.
 
@@ -353,5 +353,6 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 6. Contraste de la paleta en modo claro → verificar AA en Fase 5.
 
 ## Historial de Cambios
+- 2026-11-10: Fase 2 completada.
 - 2026-11-10: Fase 1 completada.
 - 2026-11-10: Plan creado con 7 fases a partir de PIXORA_SPEC.md v1.0 y manual de marca.

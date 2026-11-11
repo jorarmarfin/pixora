@@ -8,13 +8,7 @@ export interface AppInfo {
 export type ImageFormat = "jpeg" | "png" | "webp";
 
 export type JobStatus =
-  | "queued"
-  | "validating"
-  | "processing"
-  | "completed"
-  | "failed"
-  | "cancelled"
-  | "skipped";
+  "queued" | "validating" | "processing" | "completed" | "failed" | "cancelled" | "skipped";
 
 export interface ImageItem {
   id: string;

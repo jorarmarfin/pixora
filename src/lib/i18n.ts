@@ -1,9 +1,7 @@
 import { es, type Messages } from "@/locales/es";
 
 type Path<T, P extends string = ""> = {
-  [K in keyof T & string]: T[K] extends string
-    ? `${P}${K}`
-    : Path<T[K], `${P}${K}.`>;
+  [K in keyof T & string]: T[K] extends string ? `${P}${K}` : Path<T[K], `${P}${K}.`>;
 }[keyof T & string];
 
 export type MessageKey = Path<Messages>;
