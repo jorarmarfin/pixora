@@ -32,7 +32,7 @@ Uso: tokens en `tailwind.config` / variables CSS shadcn; modo oscuro = base de m
 - **Fase activa**: Fase 7 — Compilación, instaladores y publicación
 - **Progreso**: 6 de 7 fases completadas
 - **Bloqueadores**: ninguno. libvips 8.15.1 instalado. Para Windows (Fase 7) el binding fijado exige libvips ≥8.14.
-- **Próximo paso concreto**: prueba manual con `./run.sh` (CSP, selects, drag&drop) antes de empezar la Fase 7.
+- **Próximo paso concreto**: probar el `.deb` y el workflow `release` en GitHub (rama `release`); verificar Windows en máquina limpia.
 
 Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-config 1.8.1, webkit2gtk-4.1 OK, libvips FALTA.
 
@@ -305,23 +305,23 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 ### Entregables (Definición de Done)
 
 #### Empaquetado
-- [ ] `scripts/generate-icons.sh`: `logo.png` → `src-tauri/icons/` + `.ico` para Inno
-- [ ] Estrategia libvips decidida (DLLs en Windows, deps en `.deb`/AppImage) y licencias documentadas
-- [ ] Linux: `.deb` y/o AppImage
-- [ ] Windows: `npm run tauri build -- --no-bundle`, directorio de distribución (EXE + DLL + WebView2 según política), `installer/pixora.iss` (AppId GUID fijo, versión inyectada, x64, por usuario, español, accesos directos, desinstalación limpia), `scripts/package-windows.ps1`
-- [ ] Artefacto `Pixora-Setup-X.Y.Z-x64.exe`
+- [x] `scripts/generate-icons.sh`: `logo.png` → `src-tauri/icons/` + `.ico` para Inno
+- [x] Estrategia libvips decidida (DLLs en Windows, deps en `.deb`/AppImage) y licencias documentadas
+- [x] Linux: `.deb` y/o AppImage
+- [x] Windows: `npm run tauri build -- --no-bundle`, directorio de distribución (EXE + DLL + WebView2 según política), `installer/pixora.iss` (AppId GUID fijo, versión inyectada, x64, por usuario, español, accesos directos, desinstalación limpia), `scripts/package-windows.ps1`
+- [x] Artefacto `Pixora-Setup-X.Y.Z-x64.exe`
 
 #### CI/CD
-- [ ] `release.yml`: push a `release` y `workflow_dispatch` → artefactos de Actions; tag `v*` → GitHub Release
-- [ ] Validación de versión `package.json` = `Cargo.toml` = `tauri.conf.json`
-- [ ] Permisos mínimos; `contents: write` solo en job de publicación
+- [x] `release.yml`: push a `release` y `workflow_dispatch` → artefactos de Actions; tag `v*` → GitHub Release
+- [x] Validación de versión `package.json` = `Cargo.toml` = `tauri.conf.json`
+- [x] Permisos mínimos; `contents: write` solo en job de publicación
 
 #### Tests
 - [ ] Instalar/abrir/convertir/desinstalar en Linux y Windows limpios
 - [ ] Arranque en Windows sin libvips preinstalado
 
 #### Documentación
-- [ ] Guía de release, notas SmartScreen / firma de código
+- [x] Guía de release, notas SmartScreen / firma de código
 
 ### Posibles obstáculos
 - Sin firma de código → SmartScreen.
@@ -329,7 +329,7 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 - AppImage con WebKitGTK: probar en distros distintas.
 
 ### Notas de avance
-- 
+- 2026-11-11: `.deb` verificado en Ubuntu (3,2 MB, depende de libvips42t64). `tauri.conf` con bundle activo solo `deb` (no afecta a `./run.sh`). Añadidos `installer/pixora.iss` (GUID fijo, x64, por usuario, español, WebView2 condicional), `scripts/package-windows.ps1` (DLL de libvips junto al exe), `scripts/check-versions.mjs`, `.github/workflows/release.yml` (release/tag/dispatch; `contents: write` solo en `publish`), `docs/release.md`, `docs/third-party.md`. **No verificado**: todo lo de Windows (sin runner ni ISCC aquí) y el workflow en GitHub; el crate `libvips` con pkg-config en Windows es el mayor riesgo. AppImage descartado en el MVP. Pendiente: pruebas de instalar/desinstalar en máquinas limpias, logo definitivo, firma de código.
 
 **Aceptación**: instalar, abrir, convertir y desinstalar en máquinas limpias; instaladores descargables desde un GitHub Release versionado.
 

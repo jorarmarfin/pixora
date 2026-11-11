@@ -1,0 +1,124 @@
+name: Release
+
+# - push a `release` / workflow_dispatch: build de verificación, artefactos de Actions (sin release pública)
+# - tag vX.Y.Z: además crea el GitHub Release con los instaladores
+on:
+  push:
+    branches: [release]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  VIPS_VERSION: "8.15.1"
+
+jobs:
+  versions:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Validar versiones (package.json = Cargo.toml = tauri.conf.json [= tag])
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            node scripts/check-versions.mjs "${GITHUB_REF_NAME}"
+          else
+            node scripts/check-versions.mjs
+          fi
+      - id: v
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+  linux:
+    needs: versions
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Dependencias del sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvips-dev libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev \
+            libjavascriptcoregtk-4.1-dev librsvg2-dev libayatana-appindicator3-dev libxdo-dev pkg-config
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - run: npm run lint && npm run typecheck && npm test
+      - run: cd src-tauri && cargo test
+      - run: npm run tauri build -- --bundles deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixora-linux-deb
+          path: src-tauri/target/release/bundle/deb/*.deb
+          if-no-files-found: error
+
+  windows:
+    needs: versions
+    runs-on: windows-latest
+    env:
+      VIPSHOME: C:\vips
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - name: Herramientas (pkg-config, Inno Setup)
+        run: choco install pkgconfiglite innosetup -y --no-progress
+      - name: libvips para Windows (binarios oficiales, DLL dinámicas)
+        shell: pwsh
+        run: |
+          $url = "https://github.com/libvips/build-win64-mxe/releases/download/v$env:VIPS_VERSION/vips-dev-w64-all-$env:VIPS_VERSION.zip"
+          Invoke-WebRequest $url -OutFile vips.zip
+          Expand-Archive vips.zip -DestinationPath C:\vips-extract
+          $root = (Get-ChildItem C:\vips-extract -Directory | Select-Object -First 1).FullName
+          Move-Item $root C:\vips
+          "PKG_CONFIG_PATH=C:\vips\lib\pkgconfig" | Out-File -Append $env:GITHUB_ENV -Encoding utf8
+          "C:\vips\bin" | Out-File -Append $env:GITHUB_PATH -Encoding utf8
+      - run: npm ci
+      - run: npm test
+      - run: cd src-tauri && cargo test
+      - run: npm run tauri build -- --no-bundle
+      - name: Instalador (Inno Setup)
+        shell: pwsh
+        run: ./scripts/package-windows.ps1 -Version "${{ needs.versions.outputs.version }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixora-windows-installer
+          path: out/Pixora-Setup-*-x64.exe
+          if-no-files-found: error
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [versions, linux, windows]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write # único job con escritura: crea el Release
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Crear GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -l artifacts
+          gh release create "$GITHUB_REF_NAME" artifacts/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Pixora ${GITHUB_REF_NAME#v}" \
+            --generate-notes
