@@ -105,6 +105,10 @@ export const es = {
     pngNote:
       "Los PNG se recomprimen sin pérdida (el peso baja poco); para reducir más usa WebP en Convertir.",
   },
+  tools: {
+    title: "En construcción",
+    hint: "Las herramientas adicionales llegarán en una próxima versión. Mientras tanto usa Convertir, Comprimir y Redimensionar.",
+  },
   presets: {
     label: "Preset",
     custom: "Personalizado",

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { SettingsPanel } from "@/features/convert/SettingsPanel";
 import { ImportView } from "@/features/import/ImportView";
+import { ToolsView } from "@/features/tools/ToolsView";
 import { PresetsView } from "@/features/presets/PresetsView";
 import { PrefsView } from "@/features/settings/PrefsView";
 import { useAppConfig } from "@/stores/appConfig";
@@ -14,7 +15,9 @@ export default function App() {
   }, []);
 
   const page =
-    section === "settings" ? (
+    section === "tools" ? (
+      <ToolsView />
+    ) : section === "settings" ? (
       <PrefsView />
     ) : section === "presets" ? (
       <PresetsView />
@@ -25,7 +28,7 @@ export default function App() {
     <div className="flex h-screen bg-background text-foreground">
       <Sidebar />
       <main className="min-w-0 flex-1 overflow-auto p-6">{page}</main>
-      {section !== "settings" && section !== "presets" && <SettingsPanel />}
+      {section !== "settings" && section !== "presets" && section !== "tools" && <SettingsPanel />}
     </div>
   );
 }
