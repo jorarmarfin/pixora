@@ -89,3 +89,30 @@ export interface JobResult {
   duration_ms: number;
   error: JobError | null;
 }
+
+export interface BatchSummary {
+  total: number;
+  completed: number;
+  failed: number;
+  skipped: number;
+  cancelled: number;
+  input_bytes: number;
+  output_bytes: number;
+  /** Negativo si la salida pesa más que la entrada. */
+  saved_bytes: number;
+  duration_ms: number;
+  was_cancelled: boolean;
+}
+
+export interface BatchReport {
+  summary: BatchSummary;
+  results: JobResult[];
+}
+
+/** Evento `batch://progress`: cambios acumulados (throttled en Rust). */
+export interface BatchProgress {
+  total: number;
+  done: number;
+  started: string[];
+  finished: JobResult[];
+}

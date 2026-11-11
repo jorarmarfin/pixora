@@ -14,10 +14,14 @@ vi.mock("@/lib/tauri", () => ({
     appInfo: vi.fn(),
     importPaths: vi.fn(),
     processSingle: vi.fn(),
+    startBatch: vi.fn(),
+    cancelBatch: vi.fn().mockResolvedValue(true),
+    revealFolder: vi.fn().mockResolvedValue(undefined),
     getThumbnail: vi.fn().mockResolvedValue("data:image/jpeg;base64,AAAA"),
   },
   pickImageFiles: vi.fn().mockResolvedValue([]),
   pickFolder: vi.fn().mockResolvedValue(null),
+  onBatchProgress: vi.fn().mockResolvedValue(() => {}),
   listenDragDrop: vi.fn().mockResolvedValue(() => {}),
 }));
 

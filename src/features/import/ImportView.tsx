@@ -3,6 +3,8 @@ import { ImagePlus } from "lucide-react";
 import { t } from "@/lib/i18n";
 import { listenDragDrop } from "@/lib/tauri";
 import { useImagesStore } from "@/stores/images";
+import { BatchBar } from "@/features/jobs/BatchBar";
+import { BatchResults } from "@/features/jobs/BatchResults";
 import { ImageList } from "./ImageList";
 import { SkippedNotice } from "./SkippedNotice";
 import { Toolbar } from "./Toolbar";
@@ -32,6 +34,8 @@ export function ImportView() {
     <div className="relative flex h-full flex-col gap-4">
       <Toolbar />
       <SkippedNotice />
+      <BatchBar />
+      <BatchResults />
       <div className="min-h-0 flex-1">
         {hasItems ? (
           <ImageList />

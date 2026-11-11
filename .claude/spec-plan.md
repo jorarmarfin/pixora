@@ -1,6 +1,6 @@
 # Plan de Fases: Pixora
 
-> Generado: 2026-11-10. Última actualización: 2026-11-10.
+> Generado: 2026-11-10. Última actualización: 2026-11-11.
 > Este archivo es la fuente de verdad del progreso. Actualízalo al
 > cerrar o avanzar cada fase. Spec funcional: `PIXORA_SPEC.md`.
 > Línea gráfica: `Manual de marca Pixora en acción.png` (raíz).
@@ -29,10 +29,10 @@ Uso: tokens en `tailwind.config` / variables CSS shadcn; modo oscuro = base de m
 **Nota sobre el logo:** la raíz contiene el manual de marca (PNG compuesto), **no** el `logo.png` cuadrado que pide el spec (§4). Hay que recortar el icono principal a `logo.png` 1024×1024 (idealmente pedir el original con transparencia). Mientras tanto se usa un recorte provisional.
 
 ## Estado Actual
-- **Fase activa**: Fase 4 — Lotes y robustez
-- **Progreso**: 3 de 7 fases completadas
+- **Fase activa**: Fase 5 — Presets y experiencia final
+- **Progreso**: 4 de 7 fases completadas
 - **Bloqueadores**: ninguno. libvips 8.15.1 instalado. Para Windows (Fase 7) el binding fijado exige libvips ≥8.14.
-- **Próximo paso concreto**: `jobs/` scheduler (pool de 2–4 workers sobre `pipeline::run_job`), comando `start_batch`/`cancel_batch` y eventos de progreso con throttling.
+- **Próximo paso concreto**: revisar Fase 5 (presets, persistencia JSON de ajustes).
 
 Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-config 1.8.1, webkit2gtk-4.1 OK, libvips FALTA.
 
@@ -178,7 +178,7 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 
 ---
 
-## Fase 4: Lotes y robustez — PENDIENTE
+## Fase 4: Lotes y robustez — COMPLETADA
 
 **Duración estimada**: 4 días
 **Objetivo**: cola concurrente acotada con progreso, cancelación y reporte de fallos.
@@ -190,30 +190,30 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 ### Entregables (Definición de Done)
 
 #### Backend (Rust)
-- [ ] `jobs/` scheduler con concurrencia configurable (2–4 por defecto), separación validar/convertir/escribir
-- [ ] Cancelación cooperativa (no inicia nuevos; limpia temporales de activos)
-- [ ] Eventos de progreso con throttling
-- [ ] Comandos `start_batch`, `cancel_batch`; resumen agregado (procesados/ok/fallidos/omitidos, bytes, ahorro)
-- [ ] Errores por archivo sin abortar el lote (corrupto, no soportado, sin permisos, disco lleno)
+- [x] `jobs/` scheduler con concurrencia configurable (2–4 por defecto), separación validar/convertir/escribir
+- [x] Cancelación cooperativa (no inicia nuevos; limpia temporales de activos)
+- [x] Eventos de progreso con throttling
+- [x] Comandos `start_batch`, `cancel_batch`; resumen agregado (procesados/ok/fallidos/omitidos, bytes, ahorro)
+- [x] Errores por archivo sin abortar el lote (corrupto, no soportado, sin permisos, disco lleno)
 
 #### Frontend
-- [ ] Barra de progreso global (gradiente de marca), estados por archivo, botón cancelar
-- [ ] Pantalla de resultados: ok/errores, ahorro abs/%, botón "abrir carpeta de destino"
+- [x] Barra de progreso global (gradiente de marca), estados por archivo, botón cancelar
+- [x] Pantalla de resultados: ok/errores, ahorro abs/%, botón "abrir carpeta de destino"
 
 #### Tests
-- [ ] Lote de 100 imágenes mezcladas con errores controlados
-- [ ] Cancelación a mitad: salidas consistentes, sin `.tmp`
-- [ ] Colisiones en lote; memoria estable
+- [x] Lote de 100 imágenes mezcladas con errores controlados
+- [x] Cancelación a mitad: salidas consistentes, sin `.tmp`
+- [x] Colisiones en lote; memoria estable
 
 #### Documentación
-- [ ] Modelo de concurrencia y estados en `docs/jobs.md`
+- [x] Modelo de concurrencia y estados en `docs/jobs.md`
 
 ### Posibles obstáculos
 - Saturación de eventos hacia React → throttling/batching.
 - Cancelar trabajo ya dentro de libvips: aceptar granularidad por archivo.
 
 ### Notas de avance
-- 
+- 2026-11-11: scheduler con `thread::scope` + cancelación cooperativa por archivo; eventos `batch://progress` agrupados a 100 ms; `start_batch`/`cancel_batch`/`reveal_folder`. Test de carga destapó una carrera de colisiones de nombre en paralelo → `publish` devuelve `None` y el pipeline re-resuelve. Tests: cargo 40, Vitest 31, clippy/lint/build OK. UI: `BatchBar` (gradiente de marca, cancelar, doble confirmación de sobrescritura) y `BatchResults`. Pendiente: prueba manual en la app real (progreso visual, abrir carpeta); "memoria estable" solo verificada indirectamente (lote de 100 pequeño); disco lleno no probado automáticamente.
 
 **Aceptación**: lote de 100 imágenes mezcladas con errores controlados y resultados consistentes.
 

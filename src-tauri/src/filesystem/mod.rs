@@ -181,18 +181,20 @@ impl TempFile {
 
     /// Publica el temporal en `final_path`. Con `Rename`/`Skip` no pisa nada
     /// (hard_link falla si existe); con `Overwrite` usa rename atómico.
-    pub fn publish(self, final_path: &Path, policy: ConflictPolicy) -> Result<PathBuf, JobError> {
+    /// Devuelve `Ok(None)` si el destino ya existe (otro hilo lo ocupó): el llamador decide.
+    pub fn publish(
+        &self,
+        final_path: &Path,
+        policy: ConflictPolicy,
+    ) -> Result<Option<PathBuf>, JobError> {
         let res = match policy {
             ConflictPolicy::Overwrite => std::fs::rename(&self.path, final_path),
             _ => std::fs::hard_link(&self.path, final_path),
         };
         match res {
             // El temporal se elimina en Drop (con rename ya no existe).
-            Ok(()) => Ok(final_path.to_path_buf()),
-            Err(e) if e.kind() == io::ErrorKind::AlreadyExists => Err(JobError::with_detail(
-                JobErrorCode::Io,
-                "el destino apareció durante el proceso",
-            )),
+            Ok(()) => Ok(Some(final_path.to_path_buf())),
+            Err(e) if e.kind() == io::ErrorKind::AlreadyExists => Ok(None),
             Err(e) => Err(map_io(&e, JobErrorCode::InvalidOutputDir)),
         }
     }

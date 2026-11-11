@@ -8,4 +8,4 @@
 
 Drag & drop: evento nativo `onDragDropEvent` del webview (rutas reales). Diálogos: `tauri-plugin-dialog` (`dialog:allow-open`).
 Tipos TS en `src/types/ipc.ts` (espejo manual de `src-tauri/src/domain`); valorar `specta` en Fase 4.
-Eventos de progreso de jobs: Fase 4.
+Lotes (`start_batch`, `cancel_batch`, `reveal_folder`, evento `batch://progress`): ver `docs/jobs.md`.

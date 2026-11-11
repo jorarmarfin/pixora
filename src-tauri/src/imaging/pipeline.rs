@@ -71,7 +71,7 @@ fn run_inner(
         job.conflict_policy,
         &input_canon,
     )?;
-    let final_path = match resolution {
+    let mut final_path = match resolution {
         Resolution::Skip => return Ok(None),
         Resolution::Path(p) => p,
     };
@@ -88,7 +88,32 @@ fn run_inner(
         metadata: job.metadata_policy,
     })?;
 
-    let published = tmp.publish(&final_path, job.conflict_policy)?;
+    // Con lotes concurrentes otro worker puede ocupar el nombre entre resolver y publicar:
+    // se vuelve a resolver (Rename elige el siguiente libre; Skip omite).
+    let mut attempts = 0;
+    let published = loop {
+        if let Some(p) = tmp.publish(&final_path, job.conflict_policy)? {
+            break p;
+        }
+        attempts += 1;
+        if attempts > 100 {
+            return Err(JobError::with_detail(
+                JobErrorCode::Io,
+                "el destino apareció durante el proceso",
+            ));
+        }
+        match filesystem::resolve_output(
+            &out_dir,
+            &stem,
+            &job.name_suffix,
+            job.output_format,
+            job.conflict_policy,
+            &input_canon,
+        )? {
+            Resolution::Skip => return Ok(None),
+            Resolution::Path(p) => final_path = p,
+        }
+    };
     let output_bytes = std::fs::metadata(&published).map(|m| m.len()).unwrap_or(0);
     Ok(Some(JobResult {
         id: job.id.clone(),

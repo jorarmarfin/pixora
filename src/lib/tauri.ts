@@ -1,7 +1,15 @@
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open } from "@tauri-apps/plugin-dialog";
-import type { AppInfo, ImageJob, ImportResult, JobResult } from "@/types/ipc";
+import type {
+  AppInfo,
+  BatchProgress,
+  BatchReport,
+  ImageJob,
+  ImportResult,
+  JobResult,
+} from "@/types/ipc";
 
 /** Cliente tipado de comandos Tauri. */
 export const api = {
@@ -12,6 +20,12 @@ export const api = {
     invoke<JobResult>("process_single", {
       req: { job, overwrite_confirmed: overwriteConfirmed },
     }),
+  startBatch: (jobs: ImageJob[], overwriteConfirmed: boolean, concurrency?: number) =>
+    invoke<BatchReport>("start_batch", {
+      req: { jobs, overwrite_confirmed: overwriteConfirmed, concurrency },
+    }),
+  cancelBatch: () => invoke<boolean>("cancel_batch"),
+  revealFolder: (path: string) => invoke<void>("reveal_folder", { path }),
   getThumbnail: (path: string) => invoke<string>("get_thumbnail", { path }),
 };
 
@@ -44,4 +58,9 @@ export async function listenDragDrop(
       onDrop(p.paths);
     }
   });
+}
+
+/** Suscripción al progreso de lotes. Devuelve la función para desuscribir. */
+export function onBatchProgress(cb: (p: BatchProgress) => void): Promise<() => void> {
+  return listen<BatchProgress>("batch://progress", (e) => cb(e.payload));
 }
