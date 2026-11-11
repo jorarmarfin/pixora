@@ -37,3 +37,10 @@ Sin certificado de firma, Windows SmartScreen mostrará "Windows protegió su PC
 - [ ] Linux limpio: `sudo apt install ./Pixora_X.Y.Z_amd64.deb` → abre → convierte → `sudo apt remove pixora`.
 - [ ] Windows limpio (sin libvips): instalar → abrir → convertir → desinstalar (verificar que no quedan archivos).
 - [ ] Sin conexión: todo el flujo funciona.
+
+## Windows: parche del crate libvips (importante)
+El crate `libvips 1.6.1` trae bindings generados en Linux (`size_t = c_ulong`); en Windows x64 esos tipos miden 32 bits y
+no compila (E0308). Se usa una copia parcheada en `src-tauri/vendor/libvips` (ver `PIXORA-PATCH.md`) mediante
+`[patch.crates-io]`. Además su `build.rs` enlaza `vips`, `glib-2.0` y `gobject-2.0`: `scripts/make-vips-implibs.ps1`
+genera esas `.lib` MSVC desde las DLL de MXE. Comprobado desde Linux: `cargo check --target x86_64-pc-windows-msvc`;
+el enlazado real en Windows **solo se prueba en el runner**.

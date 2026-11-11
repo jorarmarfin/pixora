@@ -89,6 +89,10 @@ jobs:
           Move-Item $root C:\vips
           "PKG_CONFIG_PATH=C:\vips\lib\pkgconfig" | Out-File -Append $env:GITHUB_ENV -Encoding utf8
           "C:\vips\bin" | Out-File -Append $env:GITHUB_PATH -Encoding utf8
+      - uses: ilammy/msvc-dev-cmd@v1.13.0
+      - name: Import libs MSVC de libvips/glib (el crate enlaza vips, glib-2.0 y gobject-2.0)
+        shell: pwsh
+        run: ./scripts/make-vips-implibs.ps1
       - run: npm ci
       - run: npm test
       - run: cd src-tauri && cargo test
