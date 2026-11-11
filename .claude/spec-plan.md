@@ -29,16 +29,16 @@ Uso: tokens en `tailwind.config` / variables CSS shadcn; modo oscuro = base de m
 **Nota sobre el logo:** la raíz contiene el manual de marca (PNG compuesto), **no** el `logo.png` cuadrado que pide el spec (§4). Hay que recortar el icono principal a `logo.png` 1024×1024 (idealmente pedir el original con transparencia). Mientras tanto se usa un recorte provisional.
 
 ## Estado Actual
-- **Fase activa**: Fase 1 — Base del proyecto y ejecución local
-- **Progreso**: 0 de 7 fases completadas
+- **Fase activa**: Fase 2 — UI, importación y modelo de trabajos
+- **Progreso**: 1 de 7 fases completadas
 - **Bloqueadores**: `libvips` y cabeceras no instalados (`pkg-config vips` falla). Instalar `libvips-dev` antes de Fase 3 (no bloquea Fase 1–2; `run.sh` solo exigirá vips desde Fase 3). Repo git sin commits.
-- **Próximo paso concreto**: commit inicial (spec + manual de marca + plan) y scaffold `npm create tauri-app` (React+TS) en la raíz.
+- **Próximo paso concreto**: modelos de dominio (`ImageJob`, `JobStatus`) + comando `import_paths` y drag&drop con tauri-plugin-dialog.
 
 Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-config 1.8.1, webkit2gtk-4.1 OK, libvips FALTA.
 
 ---
 
-## Fase 1: Base del proyecto y ejecución local — PENDIENTE
+## Fase 1: Base del proyecto y ejecución local — COMPLETADA
 
 **Duración estimada**: 3 días
 **Objetivo**: Tauri 2 + React + TS + Tailwind + shadcn con tema de marca, estructura modular y `./run.sh` abriendo la app.
@@ -50,34 +50,34 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 ### Entregables (Definición de Done)
 
 #### Backend (Rust)
-- [ ] Scaffold Tauri 2 (`src-tauri/`, `lib.rs`, `main.rs`) con módulos vacíos: `commands/ domain/ jobs/ imaging/ filesystem/ settings/`
-- [ ] Capabilities de Tauri al mínimo (solo lo necesario: dialog, eventos)
-- [ ] Comando `ping`/`app_info` tipado como prueba de puente front–Rust
+- [x] Scaffold Tauri 2 (`src-tauri/`, `lib.rs`, `main.rs`) con módulos vacíos: `commands/ domain/ jobs/ imaging/ filesystem/ settings/`
+- [x] Capabilities de Tauri al mínimo (solo lo necesario: dialog, eventos)
+- [x] Comando `ping`/`app_info` tipado como prueba de puente front–Rust
 
 #### Frontend
-- [ ] Vite + React + TS estricto; estructura `app/ components/ features/* stores/ lib/ types/`
-- [ ] Tailwind + shadcn/ui; tokens de marca (tabla arriba) en CSS vars, modo oscuro por defecto
-- [ ] Layout base: barra lateral (Convertir, Comprimir, Redimensionar, Herramientas, Presets, Ajustes) + área principal vacía
-- [ ] Estructura i18n (es) con claves, sin textos hardcodeados
-- [ ] Fuente/tipografía geométrica bold afín al wordmark (empaquetada local, offline)
+- [x] Vite + React + TS estricto; estructura `app/ components/ features/* stores/ lib/ types/`
+- [x] Tailwind + shadcn/ui; tokens de marca (tabla arriba) en CSS vars, modo oscuro por defecto
+- [x] Layout base: barra lateral (Convertir, Comprimir, Redimensionar, Herramientas, Presets, Ajustes) + área principal vacía
+- [x] Estructura i18n (es) con claves, sin textos hardcodeados
+- [x] Fuente/tipografía geométrica bold afín al wordmark (empaquetada local, offline)
 
 #### Marca / assets
-- [ ] Mover manual de marca a `brand/` (o dejarlo en raíz) y recortar `logo.png` provisional
-- [ ] Iconos temporales de desarrollo en `src-tauri/icons/` (sin bloquear `./run.sh`)
-- [ ] `scripts/generate-icons.sh` esbozo (uso real en Fase 7)
+- [x] Mover manual de marca a `brand/` (o dejarlo en raíz) y recortar `logo.png` provisional
+- [x] Iconos temporales de desarrollo en `src-tauri/icons/` (sin bloquear `./run.sh`)
+- [x] `scripts/generate-icons.sh` esbozo (uso real en Fase 7)
 
 #### Tooling
-- [ ] `run.sh` ejecutable según §7 (sin sudo, `npm ci` solo si falta `node_modules`, `exec npm run tauri dev -- "$@"`)
-- [ ] `scripts/check-env.sh`
-- [ ] ESLint, Prettier, `cargo fmt`, `clippy`; Vitest + Testing Library configurados
-- [ ] `.gitignore`, `.nvmrc`, README inicial con requisitos Ubuntu
+- [x] `run.sh` ejecutable según §7 (sin sudo, `npm ci` solo si falta `node_modules`, `exec npm run tauri dev -- "$@"`)
+- [x] `scripts/check-env.sh`
+- [x] ESLint, Prettier, `cargo fmt`, `clippy`; Vitest + Testing Library configurados
+- [x] `.gitignore`, `.nvmrc`, README inicial con requisitos Ubuntu
 
 #### Tests
-- [ ] Smoke test Vitest del layout; `cargo test` del comando `ping`
+- [x] Smoke test Vitest del layout; `cargo test` del comando `ping`
 
 #### Documentación
-- [ ] README: requisitos Ubuntu, `./run.sh`, estructura
-- [ ] `docs/brand.md` con tokens
+- [x] README: requisitos Ubuntu, `./run.sh`, estructura
+- [x] `docs/brand.md` con tokens
 
 ### Posibles obstáculos
 - Tauri 2 y WebKitGTK 4.1 en la versión de Ubuntu: documentar paquetes exactos.
@@ -85,7 +85,7 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 - `run.sh` exige vips: condicionar el chequeo hasta Fase 3.
 
 ### Notas de avance
-- 
+- 2026-11-10: stack final Vite 8 + React 19 + TS 6 + Tailwind v4 + Vitest 5. shadcn montado a mano (components.json + Button + cn); Radix/lucide instalados. Sin plugin opener (capabilities mínimas: core:default). `bundle.active=false` hasta Fase 7. `./run.sh` verificado: vite + cargo run, proceso `pixora` vivo. Vitest 3/3, cargo test 1/1, clippy -D warnings OK, `npm run build` OK. `run.sh` aún NO exige vips (se activa en Fase 3). Rama git renombrada a `main`. Pendiente menor: logo.png es recorte provisional; verificación visual de la ventana no hecha (sin captura segura).
 
 **Aceptación**: `./run.sh` abre Pixora en Ubuntu, sin generar instaladores.
 
@@ -353,4 +353,5 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 6. Contraste de la paleta en modo claro → verificar AA en Fase 5.
 
 ## Historial de Cambios
+- 2026-11-10: Fase 1 completada.
 - 2026-11-10: Plan creado con 7 fases a partir de PIXORA_SPEC.md v1.0 y manual de marca.
