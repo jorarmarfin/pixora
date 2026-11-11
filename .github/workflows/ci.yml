@@ -1,9 +1,10 @@
 name: CI
 
+# `main` no dispara nada por sí solo: la verificación corre en pull requests y el
+# empaquetado/despliegue solo en la rama `release` y en tags (ver release.yml).
 on:
-  push:
-    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 # Solo verificación: no se empaqueta ni se publica nada (eso es la Fase 7).
 jobs:
