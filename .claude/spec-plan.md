@@ -29,10 +29,10 @@ Uso: tokens en `tailwind.config` / variables CSS shadcn; modo oscuro = base de m
 **Nota sobre el logo:** la raíz contiene el manual de marca (PNG compuesto), **no** el `logo.png` cuadrado que pide el spec (§4). Hay que recortar el icono principal a `logo.png` 1024×1024 (idealmente pedir el original con transparencia). Mientras tanto se usa un recorte provisional.
 
 ## Estado Actual
-- **Fase activa**: Fase 6 — Pruebas, estabilización y documentación
-- **Progreso**: 5 de 7 fases completadas
+- **Fase activa**: Fase 7 — Compilación, instaladores y publicación
+- **Progreso**: 6 de 7 fases completadas
 - **Bloqueadores**: ninguno. libvips 8.15.1 instalado. Para Windows (Fase 7) el binding fijado exige libvips ≥8.14.
-- **Próximo paso concreto**: revisar Fase 6 (pruebas de carga 1000 imágenes, miniaturas sin decodificar completo, contraste claro, prueba manual).
+- **Próximo paso concreto**: prueba manual con `./run.sh` (CSP, selects, drag&drop) antes de empezar la Fase 7.
 
 Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-config 1.8.1, webkit2gtk-4.1 OK, libvips FALTA.
 
@@ -253,13 +253,13 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 - Contraste del acento rosa/cian sobre claro → ajustar tonos en modo claro.
 
 ### Notas de avance
-- 2026-11-11: `settings/` con config.json atómico, recuperación de archivo corrupto (.bak) y saneado de valores; presets integrados (Web, Miniaturas, Máxima calidad) + CRUD de propios vía `load_config`/`save_config`. Front: `appConfig` store, `PresetPicker`, `PresetsView`, `PrefsView` (tema, concurrencia, carpeta por defecto). Tema claro/oscuro con `.dark` en `<html>`; superficies de lotes pasadas a tokens de tema. Docs en `docs/presets.md`. Tests: cargo 46, Vitest 38. Pendiente: contraste AA del texto blanco sobre el extremo cian del gradiente en claro; prueba manual de reinicio/offline; i18n revisado solo por búsqueda de aria-labels (sin lint automático); Comprimir/Redimensionar/Herramientas aún reutilizan la vista de Convertir.
+- 2026-11-11: `settings/` con config.json atómico, recuperación de archivo corrupto (.bak) y saneado de valores; presets integrados (Web, Miniaturas, Máxima calidad) + CRUD de propios vía `load_config`/`save_config`. Front: `appConfig` store, `PresetPicker`, `PresetsView`, `PrefsView` (tema, concurrencia, carpeta por defecto). Tema claro/oscuro con `.dark` en `<html>`; superficies de lotes pasadas a tokens de tema. Docs en `docs/presets.md`. Tests: cargo 46, Vitest 38. Pendiente: contraste AA del texto blanco sobre el extremo cian del gradiente en claro; prueba manual de reinicio/offline; i18n revisado solo por búsqueda de aria-labels (sin lint automático); Herramientas sigue sin implementar.
 
 **Aceptación**: ajustes sobreviven al reinicio; flujo de conversión completo sin conexión.
 
 ---
 
-## Fase 6: Pruebas, estabilización y documentación — PENDIENTE
+## Fase 6: Pruebas, estabilización y documentación — COMPLETADA
 
 **Duración estimada**: 4 días
 **Objetivo**: cerrar MVP con suites, benchmarks y docs.
@@ -271,23 +271,23 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 ### Entregables (Definición de Done)
 
 #### Tests
-- [ ] Suites front (Vitest) y back (`cargo test`) en verde; cobertura de entradas corruptas, alfa, EXIF, Unicode, conflictos, permisos
-- [ ] Benchmarks con corpus de 10/100/1000 imágenes; memoria y UI responsiva
-- [ ] Regresión de salidas (hash/dimensiones esperadas)
-- [ ] Revisión de seguridad: capabilities Tauri, rutas, sin shell con rutas concatenadas, límites de píxeles
+- [x] Suites front (Vitest) y back (`cargo test`) en verde; cobertura de entradas corruptas, alfa, EXIF, Unicode, conflictos, permisos
+- [x] Benchmarks con corpus de 10/100/1000 imágenes; memoria y UI responsiva
+- [x] Regresión de salidas (hash/dimensiones esperadas)
+- [x] Revisión de seguridad: capabilities Tauri, rutas, sin shell con rutas concatenadas, límites de píxeles
 
 #### CI (solo verificación, sin empaquetar)
-- [ ] `.github/workflows/ci.yml`: lint, typecheck, tests, `npm run build`, `cargo fmt/clippy/test`, caches
+- [x] `.github/workflows/ci.yml`: lint, typecheck, tests, `npm run build`, `cargo fmt/clippy/test`, caches
 
 #### Documentación
-- [ ] Manual de usuario, `CHANGELOG.md`, matriz de formatos, checklist de criterios MVP (§11)
+- [x] Manual de usuario, `CHANGELOG.md`, matriz de formatos, checklist de criterios MVP (§11)
 
 ### Posibles obstáculos
 - libvips en runner CI: instalar `libvips-dev` en el job.
 - Defectos de rendimiento con lotes grandes → ajustar concurrencia.
 
 ### Notas de avance
-- 
+- 2026-11-11: matriz de regresión (3 formatos × 6 redimensionados), PNG→PNG exacto, benchmark 10/100/1000 (16 img/s, pico 371 MB). Revisión de seguridad: límite de 64 MP en miniaturas (antes sin límite), CSP + devCsp, ver `docs/security.md`. CI en `.github/workflows/ci.yml` (no ejecutado aún en GitHub). Bug de UI: los `<select>` se veían blancos en oscuro → estilos globales de select/option. Docs: manual, formatos, changelog, checklist MVP. Pendiente: prueba manual de la app (CSP no verificada en ventana real: si algo no carga, revisar `devCsp`), contraste AA del gradiente en claro, vista Herramientas.
 
 **Aceptación**: sin defectos bloqueantes; criterios de MVP cumplidos; errores claros.
 

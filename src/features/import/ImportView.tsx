@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ImagePlus } from "lucide-react";
-import { t } from "@/lib/i18n";
+import { t, type MessageKey } from "@/lib/i18n";
+import { useUiStore } from "@/stores/ui";
 import { listenDragDrop } from "@/lib/tauri";
 import { useImagesStore } from "@/stores/images";
 import { BatchBar } from "@/features/jobs/BatchBar";
@@ -13,6 +14,9 @@ import { useImport } from "./useImport";
 export function ImportView() {
   const hasItems = useImagesStore((s) => s.entries.length > 0);
   const importPaths = useImport();
+  const section = useUiStore((s) => s.section);
+  const mode = (section === "optimize" || section === "resize" ? section : "convert") as
+    "convert" | "optimize" | "resize";
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
@@ -32,6 +36,10 @@ export function ImportView() {
 
   return (
     <div className="relative flex h-full flex-col gap-4">
+      <header>
+        <h1 className="text-xl font-semibold">{t(`modes.${mode}` as MessageKey)}</h1>
+        <p className="text-sm text-muted-foreground">{t(`modes.${mode}Hint` as MessageKey)}</p>
+      </header>
       <Toolbar />
       <SkippedNotice />
       <BatchBar />

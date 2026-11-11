@@ -505,6 +505,75 @@ mod tests {
         assert_eq!(r.error.unwrap().code, JobErrorCode::InvalidOutputDir);
     }
 
+    /// Regresión: matriz formato × redimensionado con dimensiones y formato exactos.
+    #[test]
+    fn matriz_de_regresion_de_salidas() {
+        let d = tempfile::tempdir().unwrap();
+        let src = d.path().join("a.png");
+        save(&noisy(200, 100), &src, F::Png);
+        let out = d.path().join("o");
+        std::fs::create_dir_all(&out).unwrap();
+        let cases: [(ResizeOptions, (u32, u32)); 6] = [
+            (ResizeOptions::None, (200, 100)),
+            (ResizeOptions::Width { px: 100 }, (100, 50)),
+            (ResizeOptions::Height { px: 25 }, (50, 25)),
+            (ResizeOptions::Percent { value: 10.0 }, (20, 10)),
+            (
+                ResizeOptions::Box {
+                    width: 60,
+                    height: 60,
+                    fit: FitMode::Contain,
+                },
+                (60, 30),
+            ),
+            (
+                ResizeOptions::Box {
+                    width: 60,
+                    height: 60,
+                    fit: FitMode::Cover,
+                },
+                (60, 60),
+            ),
+        ];
+        for (fmt, expected) in [
+            (ImageFormat::Jpeg, F::Jpeg),
+            (ImageFormat::Png, F::Png),
+            (ImageFormat::Webp, F::WebP),
+        ] {
+            for (i, (resize, dims)) in cases.iter().enumerate() {
+                let mut j = job(&src, &out, fmt);
+                j.resize = *resize;
+                j.name_suffix = format!("-{expected:?}-{i}");
+                let r = run_job(engine(), &j, &NO_CONFIRM);
+                assert_eq!(
+                    r.status,
+                    JobStatus::Completed,
+                    "{fmt:?} {resize:?}: {:?}",
+                    r.error
+                );
+                assert_eq!((r.width, r.height), *dims, "{fmt:?} {resize:?}");
+                let bytes = std::fs::read(r.output_path.unwrap()).unwrap();
+                assert_eq!(image::guess_format(&bytes).unwrap(), expected);
+                let img = image::load_from_memory(&bytes).unwrap();
+                assert_eq!((img.width(), img.height()), *dims);
+            }
+        }
+        assert!(leftovers(&out).is_empty());
+    }
+
+    /// PNG→PNG sin redimensionar conserva los píxeles exactos.
+    #[test]
+    fn png_a_png_es_exacto_pixel_a_pixel() {
+        let d = tempfile::tempdir().unwrap();
+        let src = d.path().join("a.png");
+        let img = noisy(37, 29);
+        save(&img, &src, F::Png);
+        let out = d.path().join("o");
+        std::fs::create_dir_all(&out).unwrap();
+        let r = run_job(engine(), &job(&src, &out, ImageFormat::Png), &NO_CONFIRM);
+        assert_eq!(image::open(r.output_path.unwrap()).unwrap().to_rgb8(), img);
+    }
+
     #[test]
     fn opciones_invalidas_se_reportan() {
         let d = tempfile::tempdir().unwrap();

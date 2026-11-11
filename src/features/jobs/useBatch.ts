@@ -1,8 +1,9 @@
 import { useCallback } from "react";
-import { buildJob } from "@/lib/job";
+import { buildJob, modeIssue } from "@/lib/job";
 import { api, onBatchProgress } from "@/lib/tauri";
 import { useBatchStore } from "@/stores/batch";
 import { useAppConfig } from "@/stores/appConfig";
+import { useUiStore } from "@/stores/ui";
 import { useConvertSettings } from "@/stores/convertSettings";
 import { useImagesStore } from "@/stores/images";
 import type { BatchProgress, JobResult } from "@/types/ipc";
@@ -23,6 +24,7 @@ export function useBatch() {
     const { entries, setStatus, setResult } = useImagesStore.getState();
     const pending = entries.filter((e) => e.status !== "completed").map((e) => e.item);
     if (pending.length === 0 || !settings.outputDir) return;
+    if (modeIssue(useUiStore.getState().section, settings)) return;
 
     batch.begin(pending.length, settings.outputDir);
     pending.forEach((i) => setStatus(i.id, "queued"));
@@ -30,7 +32,7 @@ export function useBatch() {
     try {
       unlisten = await onBatchProgress(applyProgress);
       const report = await api.startBatch(
-        pending.map((i) => buildJob(i, settings)),
+        pending.map((i) => buildJob(i, settings, useUiStore.getState().section)),
         overwriteConfirmed,
         useAppConfig.getState().concurrency,
       );

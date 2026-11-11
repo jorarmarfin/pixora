@@ -1,6 +1,6 @@
 import { defaultSettings } from "@/stores/convertSettings";
 import { makeItem } from "@/test/factories";
-import { buildJob, buildResize, savingsPercent } from "./job";
+import { buildJob, buildResize, modeIssue, savingsPercent } from "./job";
 
 describe("buildJob", () => {
   it("mapea ajustes al contrato del backend", () => {
@@ -44,5 +44,35 @@ describe("savingsPercent", () => {
     expect(savingsPercent(1000, 250)).toBe(75);
     expect(savingsPercent(1000, 1200)).toBe(-20);
     expect(savingsPercent(0, 10)).toBe(0);
+  });
+});
+
+describe("modos Comprimir y Redimensionar", () => {
+  const base = { ...defaultSettings, format: "webp" as const, resizeKind: "width" as const };
+
+  it("Comprimir conserva el formato de cada imagen y no redimensiona", () => {
+    const jpg = makeItem(1, { format: "jpeg" });
+    const job = buildJob(jpg, base, "optimize");
+    expect(job.output_format).toBe("jpeg");
+    expect(job.resize).toEqual({ kind: "none" });
+    expect(buildJob(makeItem(2, { format: "png" }), base, "optimize").quality_mode).toBe(
+      "lossless",
+    );
+  });
+
+  it("Redimensionar conserva el formato y aplica el tamaño", () => {
+    const job = buildJob(makeItem(1, { format: "png" }), { ...base, width: 640 }, "resize");
+    expect(job.output_format).toBe("png");
+    expect(job.resize).toEqual({ kind: "width", px: 640 });
+  });
+
+  it("Convertir usa el formato elegido", () => {
+    expect(buildJob(makeItem(1, { format: "png" }), base, "convert").output_format).toBe("webp");
+  });
+
+  it("Redimensionar exige elegir un tamaño", () => {
+    expect(modeIssue("resize", { ...base, resizeKind: "none" })).toBe("process.needResize");
+    expect(modeIssue("resize", base)).toBeNull();
+    expect(modeIssue("optimize", { ...base, resizeKind: "none" })).toBeNull();
   });
 });

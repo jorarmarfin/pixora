@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
+import { modeIssue } from "@/lib/job";
+import { useUiStore } from "@/stores/ui";
 import { useBatchStore } from "@/stores/batch";
 import { useConvertSettings } from "@/stores/convertSettings";
 import { useImagesStore } from "@/stores/images";
@@ -13,6 +15,8 @@ export function BatchBar() {
   const { running, cancelling, total, done } = useBatchStore();
   const pending = useImagesStore((s) => s.entries.filter((e) => e.status !== "completed").length);
   const outputDir = useConvertSettings((s) => s.outputDir);
+  const section = useUiStore((s) => s.section);
+  const issue = useConvertSettings((s) => modeIssue(section, s));
   const needsConfirm = useConvertSettings((s) => s.conflict === "overwrite");
   const [armed, setArmed] = useState(false);
 
@@ -48,8 +52,8 @@ export function BatchBar() {
   return (
     <div className="flex items-center gap-3">
       <Button
-        disabled={!outputDir}
-        title={!outputDir ? t("process.needOutputDir") : undefined}
+        disabled={!outputDir || !!issue}
+        title={issue ? t(issue) : !outputDir ? t("process.needOutputDir") : undefined}
         variant={armed ? "outline" : "default"}
         onBlur={() => setArmed(false)}
         onClick={() => {
@@ -59,10 +63,12 @@ export function BatchBar() {
         }}
       >
         <Play className="size-4" aria-hidden />
-        {armed ? t("batch.confirmOverwrite") : `${t("batch.convertAll")} (${pending})`}
+        {armed ? t("batch.confirmOverwrite") : `${t(`batch.run_${section}`)} (${pending})`}
       </Button>
-      {!outputDir && (
-        <span className="text-xs text-muted-foreground">{t("process.needOutputDir")}</span>
+      {(issue || !outputDir) && (
+        <span className="text-xs text-muted-foreground">
+          {issue ? t(issue) : t("process.needOutputDir")}
+        </span>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { buildJob } from "@/lib/job";
 import { api } from "@/lib/tauri";
+import { useUiStore } from "@/stores/ui";
 import { useConvertSettings } from "@/stores/convertSettings";
 import { useImagesStore } from "@/stores/images";
 import type { ImageItem, JobResult } from "@/types/ipc";
@@ -9,7 +10,7 @@ import type { ImageItem, JobResult } from "@/types/ipc";
 export function useConvertOne() {
   return useCallback(async (item: ImageItem, overwriteConfirmed = false) => {
     const { setStatus, setResult } = useImagesStore.getState();
-    const job = buildJob(item, useConvertSettings.getState());
+    const job = buildJob(item, useConvertSettings.getState(), useUiStore.getState().section);
     setStatus(item.id, "processing");
     try {
       setResult(item.id, await api.processSingle(job, overwriteConfirmed));

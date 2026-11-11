@@ -308,4 +308,61 @@ mod tests {
         assert_eq!(clamp_concurrency(Some(0)), 1);
         assert_eq!(clamp_concurrency(Some(99)), MAX_CONCURRENCY);
     }
+
+    /// Memoria pico del proceso (KB) según /proc (solo Linux).
+    fn peak_rss_kb() -> u64 {
+        std::fs::read_to_string("/proc/self/status")
+            .ok()
+            .and_then(|s| {
+                s.lines()
+                    .find(|l| l.starts_with("VmHWM:"))
+                    .and_then(|l| l.split_whitespace().nth(1)?.parse().ok())
+            })
+            .unwrap_or(0)
+    }
+
+    /// Benchmark manual: `cargo test --release bench_lotes -- --ignored --nocapture`.
+    #[test]
+    #[ignore = "benchmark: ejecutar a mano"]
+    fn bench_lotes_10_100_1000() {
+        let d = tempfile::tempdir().unwrap();
+        let base = d.path().join("base.png");
+        RgbImage::from_fn(1600, 1200, |x, y| {
+            Rgb([(x ^ y) as u8, (x.wrapping_mul(y) >> 3) as u8, (x + y) as u8])
+        })
+        .save(&base)
+        .unwrap();
+        for n in [10usize, 100, 1000] {
+            let out = d.path().join(format!("o{n}"));
+            std::fs::create_dir_all(&out).unwrap();
+            let jobs: Vec<_> = (0..n)
+                .map(|i| {
+                    let p = d.path().join(format!("in{n}_{i}.png"));
+                    std::fs::hard_link(&base, &p).unwrap();
+                    let mut j = job(&format!("j{i}"), &p, &out);
+                    j.resize = ResizeOptions::Width { px: 800 };
+                    j
+                })
+                .collect();
+            let before = peak_rss_kb();
+            let (_, s) = run_batch(
+                imaging::engine().unwrap(),
+                &jobs,
+                &OPTS,
+                DEFAULT_CONCURRENCY,
+                &AtomicBool::new(false),
+                &|_| {},
+            );
+            println!(
+                "BENCH n={n} ok={} {} ms ({:.1} img/s) pico RSS {} MB (antes {} MB)",
+                s.completed,
+                s.duration_ms,
+                n as f64 * 1000.0 / s.duration_ms.max(1) as f64,
+                peak_rss_kb() / 1024,
+                before / 1024,
+            );
+            assert_eq!(s.completed, n);
+            assert_eq!(tmp_files(&out), 0);
+        }
+    }
 }

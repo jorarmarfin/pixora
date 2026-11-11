@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { api, onBatchProgress } from "@/lib/tauri";
 import { useBatchStore } from "@/stores/batch";
 import { defaultSettings, useConvertSettings } from "@/stores/convertSettings";
+import { useUiStore } from "@/stores/ui";
 import { useImagesStore } from "@/stores/images";
 import { makeItem } from "@/test/factories";
 import type { BatchProgress, BatchReport, JobResult } from "@/types/ipc";
@@ -117,6 +118,27 @@ describe("lote", () => {
     await userEvent.click(screen.getByRole("button", { name: /Convertir todo/ }));
     await waitFor(() => expect(useBatchStore.getState().running).toBe(false));
     expect(useImagesStore.getState().entries.every((e) => e.status === "failed")).toBe(true);
+  });
+});
+
+describe("modos", () => {
+  afterEach(() => act(() => useUiStore.getState().setSection("convert")));
+
+  it("Comprimir envía el formato original de cada imagen", async () => {
+    act(() => useUiStore.getState().setSection("optimize"));
+    vi.mocked(api.startBatch).mockReturnValueOnce(new Promise(() => {}));
+    render(<BatchBar />);
+    await userEvent.click(screen.getByRole("button", { name: /Comprimir todo \(3\)/ }));
+    const [jobs] = vi.mocked(api.startBatch).mock.calls[0];
+    expect(jobs.every((j) => j.output_format === "png")).toBe(true);
+    expect(jobs.every((j) => j.resize.kind === "none")).toBe(true);
+  });
+
+  it("Redimensionar sin tamaño elegido no permite iniciar", () => {
+    act(() => useUiStore.getState().setSection("resize"));
+    render(<BatchBar />);
+    expect(screen.getByRole("button", { name: /Redimensionar todo/ })).toBeDisabled();
+    expect(screen.getByText(/Elige cómo redimensionar/)).toBeInTheDocument();
   });
 });
 

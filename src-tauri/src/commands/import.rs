@@ -82,13 +82,25 @@ pub async fn import_paths(paths: Vec<String>, recursive: bool) -> Result<ImportR
         .map_err(|e| e.to_string())
 }
 
+/// Tope de píxeles para decodificar una miniatura completa (64 MP ≈ 192 MB en RGB).
+/// Evita que una "bomba de descompresión" agote la memoria; la fila queda sin miniatura.
+pub const MAX_THUMB_PIXELS: u64 = 64_000_000;
+
 /// Miniatura JPEG en data URL, respetando la orientación EXIF.
 pub fn make_thumbnail(path: &Path) -> Result<String, String> {
+    make_thumbnail_limited(path, MAX_THUMB_PIXELS)
+}
+
+pub fn make_thumbnail_limited(path: &Path, max_pixels: u64) -> Result<String, String> {
     let reader = ImageReader::open(path)
         .map_err(|e| e.to_string())?
         .with_guessed_format()
         .map_err(|e| e.to_string())?;
     let mut decoder = reader.into_decoder().map_err(|e| e.to_string())?;
+    let (w, h) = decoder.dimensions();
+    if u64::from(w) * u64::from(h) > max_pixels {
+        return Err("imagen demasiado grande para miniatura".into());
+    }
     let orientation = decoder.orientation().map_err(|e| e.to_string())?;
     let mut img = DynamicImage::from_decoder(decoder).map_err(|e| e.to_string())?;
     img.apply_orientation(orientation);
@@ -170,6 +182,16 @@ mod tests {
         write_img(&p, 500, 300, F::Png);
         let url = make_thumbnail(&p).unwrap();
         assert!(url.starts_with("data:image/jpeg;base64,"));
+    }
+
+    #[test]
+    fn miniatura_respeta_el_limite_de_pixeles() {
+        let d = tempfile::tempdir().unwrap();
+        let p = d.path().join("g.png");
+        write_img(&p, 100, 100, F::Png);
+        assert!(make_thumbnail_limited(&p, 10_000).is_ok());
+        let e = make_thumbnail_limited(&p, 9_999).unwrap_err();
+        assert!(e.contains("demasiado grande"));
     }
 
     #[test]

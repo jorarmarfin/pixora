@@ -1,4 +1,5 @@
 import type { ConvertSettings } from "@/stores/convertSettings";
+import type { SectionId } from "@/stores/ui";
 import type { ImageItem, ImageJob, ResizeOptionsDto } from "@/types/ipc";
 
 export function buildResize(s: ConvertSettings): ResizeOptionsDto {
@@ -16,16 +17,29 @@ export function buildResize(s: ConvertSettings): ResizeOptionsDto {
   }
 }
 
+/** Comprimir y Redimensionar conservan el formato de cada imagen; Convertir usa el elegido. */
+export const keepsFormat = (mode: SectionId) => mode === "optimize" || mode === "resize";
+
+/** Motivo por el que la sección no puede ejecutarse aún (clave i18n), o null. */
+export function modeIssue(mode: SectionId, s: ConvertSettings): "process.needResize" | null {
+  return mode === "resize" && s.resizeKind === "none" ? "process.needResize" : null;
+}
+
 /** Traduce los ajustes de UI al contrato `ImageJob` del backend. */
-export function buildJob(item: ImageItem, s: ConvertSettings): ImageJob {
+export function buildJob(
+  item: ImageItem,
+  s: ConvertSettings,
+  mode: SectionId = "convert",
+): ImageJob {
+  const format = keepsFormat(mode) ? item.format : s.format;
   return {
     id: item.id,
     input_path: item.path,
     output_directory: s.outputDir,
-    output_format: s.format,
-    quality_mode: s.format === "png" ? "lossless" : s.qualityMode,
+    output_format: format,
+    quality_mode: format === "png" ? "lossless" : s.qualityMode,
     quality_value: s.quality,
-    resize: buildResize(s),
+    resize: mode === "optimize" ? { kind: "none" } : buildResize(s),
     metadata_policy: s.metadata,
     name_suffix: s.suffix,
     conflict_policy: s.conflict,

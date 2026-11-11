@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
 import { pickFolder } from "@/lib/tauri";
 import { PresetPicker } from "@/features/presets/PresetPicker";
+import { useUiStore } from "@/stores/ui";
 import { useConvertSettings } from "@/stores/convertSettings";
 import type { ConflictPolicy, FitMode, ImageFormat, MetadataPolicy, ResizeKind } from "@/types/ipc";
 
@@ -29,8 +30,11 @@ function Field({
 
 export function SettingsPanel() {
   const s = useConvertSettings();
+  const section = useUiStore((x) => x.section);
+  const showFormat = section !== "optimize" && section !== "resize";
+  const showResize = section !== "optimize";
   const lossless = s.qualityMode === "lossless";
-  const isPng = s.format === "png";
+  const isPng = showFormat && s.format === "png";
   const num = (v: string) => Math.max(1, Math.round(Number(v) || 1));
 
   return (
@@ -40,20 +44,29 @@ export function SettingsPanel() {
     >
       <h2 className="text-base font-semibold">{t("settings.title")}</h2>
 
-      <PresetPicker />
+      {showFormat ? (
+        <PresetPicker />
+      ) : (
+        <p className="text-xs text-muted-foreground">{t("modes.keepFormat")}</p>
+      )}
+      {section === "optimize" && (
+        <p className="text-xs text-muted-foreground">{t("modes.pngNote")}</p>
+      )}
 
-      <Field label={t("settings.format")} htmlFor="format">
-        <select
-          id="format"
-          className={field}
-          value={s.format}
-          onChange={(e) => s.patch({ format: e.target.value as ImageFormat })}
-        >
-          <option value="jpeg">JPEG</option>
-          <option value="png">PNG</option>
-          <option value="webp">WebP</option>
-        </select>
-      </Field>
+      {showFormat && (
+        <Field label={t("settings.format")} htmlFor="format">
+          <select
+            id="format"
+            className={field}
+            value={s.format}
+            onChange={(e) => s.patch({ format: e.target.value as ImageFormat })}
+          >
+            <option value="jpeg">JPEG</option>
+            <option value="png">PNG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </Field>
+      )}
 
       <Field label={t("settings.mode")} htmlFor="mode">
         <select
@@ -82,71 +95,75 @@ export function SettingsPanel() {
         />
       </Field>
 
-      <Field label={t("settings.resize")} htmlFor="resize">
-        <select
-          id="resize"
-          className={field}
-          value={s.resizeKind}
-          onChange={(e) => s.patch({ resizeKind: e.target.value as ResizeKind })}
-        >
-          <option value="none">{t("settings.resizeNone")}</option>
-          <option value="width">{t("settings.resizeWidth")}</option>
-          <option value="height">{t("settings.resizeHeight")}</option>
-          <option value="percent">{t("settings.resizePercent")}</option>
-          <option value="box">{t("settings.resizeBox")}</option>
-        </select>
-      </Field>
+      {showResize && (
+        <>
+          <Field label={t("settings.resize")} htmlFor="resize">
+            <select
+              id="resize"
+              className={field}
+              value={s.resizeKind}
+              onChange={(e) => s.patch({ resizeKind: e.target.value as ResizeKind })}
+            >
+              <option value="none">{t("settings.resizeNone")}</option>
+              <option value="width">{t("settings.resizeWidth")}</option>
+              <option value="height">{t("settings.resizeHeight")}</option>
+              <option value="percent">{t("settings.resizePercent")}</option>
+              <option value="box">{t("settings.resizeBox")}</option>
+            </select>
+          </Field>
 
-      {(s.resizeKind === "width" || s.resizeKind === "box") && (
-        <Field label={t("settings.width")} htmlFor="width">
-          <input
-            id="width"
-            type="number"
-            min={1}
-            className={field}
-            value={s.width}
-            onChange={(e) => s.patch({ width: num(e.target.value) })}
-          />
-        </Field>
-      )}
-      {(s.resizeKind === "height" || s.resizeKind === "box") && (
-        <Field label={t("settings.height")} htmlFor="height">
-          <input
-            id="height"
-            type="number"
-            min={1}
-            className={field}
-            value={s.height}
-            onChange={(e) => s.patch({ height: num(e.target.value) })}
-          />
-        </Field>
-      )}
-      {s.resizeKind === "percent" && (
-        <Field label={t("settings.percent")} htmlFor="percent">
-          <input
-            id="percent"
-            type="number"
-            min={1}
-            max={400}
-            className={field}
-            value={s.percent}
-            onChange={(e) => s.patch({ percent: Math.min(400, num(e.target.value)) })}
-          />
-        </Field>
-      )}
-      {s.resizeKind === "box" && (
-        <Field label={t("settings.fit")} htmlFor="fit">
-          <select
-            id="fit"
-            className={field}
-            value={s.fit}
-            onChange={(e) => s.patch({ fit: e.target.value as FitMode })}
-          >
-            <option value="contain">{t("settings.fitContain")}</option>
-            <option value="cover">{t("settings.fitCover")}</option>
-            <option value="fit">{t("settings.fitFit")}</option>
-          </select>
-        </Field>
+          {(s.resizeKind === "width" || s.resizeKind === "box") && (
+            <Field label={t("settings.width")} htmlFor="width">
+              <input
+                id="width"
+                type="number"
+                min={1}
+                className={field}
+                value={s.width}
+                onChange={(e) => s.patch({ width: num(e.target.value) })}
+              />
+            </Field>
+          )}
+          {(s.resizeKind === "height" || s.resizeKind === "box") && (
+            <Field label={t("settings.height")} htmlFor="height">
+              <input
+                id="height"
+                type="number"
+                min={1}
+                className={field}
+                value={s.height}
+                onChange={(e) => s.patch({ height: num(e.target.value) })}
+              />
+            </Field>
+          )}
+          {s.resizeKind === "percent" && (
+            <Field label={t("settings.percent")} htmlFor="percent">
+              <input
+                id="percent"
+                type="number"
+                min={1}
+                max={400}
+                className={field}
+                value={s.percent}
+                onChange={(e) => s.patch({ percent: Math.min(400, num(e.target.value)) })}
+              />
+            </Field>
+          )}
+          {s.resizeKind === "box" && (
+            <Field label={t("settings.fit")} htmlFor="fit">
+              <select
+                id="fit"
+                className={field}
+                value={s.fit}
+                onChange={(e) => s.patch({ fit: e.target.value as FitMode })}
+              >
+                <option value="contain">{t("settings.fitContain")}</option>
+                <option value="cover">{t("settings.fitCover")}</option>
+                <option value="fit">{t("settings.fitFit")}</option>
+              </select>
+            </Field>
+          )}
+        </>
       )}
 
       <Field label={t("settings.metadata")} htmlFor="metadata">
