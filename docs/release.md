@@ -13,7 +13,7 @@ Licencias: ver `docs/third-party.md` (libvips LGPL-2.1+, enlace dinámico).
 1. Subir la versión a la vez en `package.json`, `src-tauri/Cargo.toml` y `src-tauri/tauri.conf.json`
    (`npm run check:versions` lo valida; el workflow también).
 2. Actualizar `CHANGELOG.md`. Merge a `main`; promover a la rama `release`.
-3. Push a `release` → `release.yml` construye Linux (`.deb`) y Windows (`Pixora-Setup-X.Y.Z-x64.exe`) y los deja como
+3. Push a `release` → `release.yml` construye solo Windows (`Pixora-Setup-X.Y.Z-x64.exe`) y los deja como
    **artefactos de Actions** (sin release pública). Probarlos en máquinas limpias.
 4. Crear el tag sobre el commit validado: `git tag vX.Y.Z && git push origin vX.Y.Z` → job `publish` crea el GitHub Release
    (único job con `contents: write`).
