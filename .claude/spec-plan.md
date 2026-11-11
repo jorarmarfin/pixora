@@ -29,10 +29,10 @@ Uso: tokens en `tailwind.config` / variables CSS shadcn; modo oscuro = base de m
 **Nota sobre el logo:** la raíz contiene el manual de marca (PNG compuesto), **no** el `logo.png` cuadrado que pide el spec (§4). Hay que recortar el icono principal a `logo.png` 1024×1024 (idealmente pedir el original con transparencia). Mientras tanto se usa un recorte provisional.
 
 ## Estado Actual
-- **Fase activa**: Fase 3 — Conversión y optimización individual
-- **Progreso**: 2 de 7 fases completadas
-- **Bloqueadores**: `libvips` y cabeceras no instalados (`pkg-config vips` falla). Instalar `libvips-dev` antes de Fase 3 (no bloquea Fase 1–2; `run.sh` solo exigirá vips desde Fase 3). Repo git sin commits.
-- **Próximo paso concreto**: instalar `libvips-dev` (`sudo apt install -y libvips-dev`), spike del binding Rust de libvips (0.5 día) y trait `ImageEngine`.
+- **Fase activa**: Fase 4 — Lotes y robustez
+- **Progreso**: 3 de 7 fases completadas
+- **Bloqueadores**: ninguno. libvips 8.15.1 instalado. Para Windows (Fase 7) el binding fijado exige libvips ≥8.14.
+- **Próximo paso concreto**: `jobs/` scheduler (pool de 2–4 workers sobre `pipeline::run_job`), comando `start_batch`/`cancel_batch` y eventos de progreso con throttling.
 
 Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-config 1.8.1, webkit2gtk-4.1 OK, libvips FALTA.
 
@@ -135,7 +135,7 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 
 ---
 
-## Fase 3: Conversión y optimización individual — PENDIENTE
+## Fase 3: Conversión y optimización individual — COMPLETADA
 
 **Duración estimada**: 5 días
 **Objetivo**: motor de imagen real tras un trait, JPEG/PNG/WebP con calidad y resize, escritura segura.
@@ -147,24 +147,24 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 ### Entregables (Definición de Done)
 
 #### Backend (Rust)
-- [ ] `imaging/engine.rs`: trait `ImageEngine` independiente de UI
-- [ ] `imaging/vips.rs`: adaptador libvips (decodificar, orientación EXIF, resize contain/cover/fit, encode JPEG/PNG/WebP lossy/lossless)
-- [ ] Fondo configurable para alfa→JPEG; límites de píxeles/dimensiones
-- [ ] `filesystem/`: colisiones (sufijo incremental/omitir/confirmar), temp en mismo dir + rename atómico, limpieza de temporales, protección origen=destino
-- [ ] Nomenclatura/sufijo de salida; `JobResult` con bytes in/out, duración
-- [ ] Comando `process_single`
+- [x] `imaging/engine.rs`: trait `ImageEngine` independiente de UI
+- [x] `imaging/vips.rs`: adaptador libvips (decodificar, orientación EXIF, resize contain/cover/fit, encode JPEG/PNG/WebP lossy/lossless)
+- [x] Fondo configurable para alfa→JPEG; límites de píxeles/dimensiones
+- [x] `filesystem/`: colisiones (sufijo incremental/omitir/confirmar), temp en mismo dir + rename atómico, limpieza de temporales, protección origen=destino
+- [x] Nomenclatura/sufijo de salida; `JobResult` con bytes in/out, duración
+- [x] Comando `process_single`
 
 #### Frontend
-- [ ] Opciones de calidad por formato (lossy/lossless), resize (ancho/alto/%/proporcional/modo)
-- [ ] Mostrar resultado individual (tamaño original/final/ahorro)
+- [x] Opciones de calidad por formato (lossy/lossless), resize (ancho/alto/%/proporcional/modo)
+- [x] Mostrar resultado individual (tamaño original/final/ahorro)
 
 #### Tests
-- [ ] `fixtures/` pequeñas: JPEG con EXIF rotado, PNG con alfa, WebP, corrupta, no soportada
-- [ ] Verificar dimensiones/formato de salida, origen intacto, rutas Unicode/espacios, permisos, conflictos
-- [ ] `run.sh` pasa a exigir `pkg-config vips`
+- [x] Fixtures generadas en código dentro de los tests (EXIF inyectado, alfa, ruido, corrupta); sin binarios versionados
+- [x] Verificar dimensiones/formato de salida, origen intacto, rutas Unicode/espacios, permisos, conflictos
+- [x] `run.sh` pasa a exigir `pkg-config vips`
 
 #### Documentación
-- [ ] `docs/engine.md` (decisión libvips, linking, licencias), matriz de formatos inicial
+- [x] `docs/engine.md` (decisión libvips, linking, licencias), matriz de formatos inicial
 
 ### Posibles obstáculos
 - Binding libvips inmaduro/licencia → mantener adaptador sustituible (fallback ImageMagick/`image`).
@@ -172,7 +172,7 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 - Linking dinámico en Windows se resuelve en Fase 7; dejar documentado.
 
 ### Notas de avance
-- 
+- 2026-11-10: spike binding: crate `libvips` 2.3.0 y 1.7.x FALLAN en runtime contra libvips 8.15.1 (propiedades `exact`, `input-profile`, `keep` inexistentes). Fijado `libvips =1.6.1` (API `strip`), funciona en 8.15.1; documentado en `docs/engine.md`. Limitación: metadatos todo-o-nada (KeepIcc = KeepAll); UI solo ofrece Eliminar/Conservar. Trait `ImageEngine` + `VipsEngine`, `geometry` puro, `pipeline` (validar→destino→temporal→publicar), `filesystem` (colisiones, hard_link/rename, TempFile con Drop). `process_single` expuesto. UI: botón Convertir por fila, ahorro/error por archivo, confirmación explícita de sobrescritura. Tests: cargo 32/32 con libvips real (EXIF, alfa, lossless exacto, origen intacto byte a byte, colisiones, corrupto sin temporales, Unicode, permisos, overwrite=origen), Vitest 24/24, clippy/lint/typecheck/build OK, `./run.sh` arranca (ahora exige vips). NO probado: conversión de punta a punta desde la ventana real (diálogo de carpeta + clic), requiere prueba manual; JPEG CMYK y PNG 16-bit sin fixture.
 
 **Aceptación**: convertir una imagen con dimensiones/codificación correctas, sin modificar el origen.
 
@@ -353,6 +353,7 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 6. Contraste de la paleta en modo claro → verificar AA en Fase 5.
 
 ## Historial de Cambios
+- 2026-11-10: Fase 3 completada.
 - 2026-11-10: Fase 2 completada.
 - 2026-11-10: Fase 1 completada.
 - 2026-11-10: Plan creado con 7 fases a partir de PIXORA_SPEC.md v1.0 y manual de marca.

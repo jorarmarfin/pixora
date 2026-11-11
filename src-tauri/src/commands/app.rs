@@ -11,8 +11,8 @@ pub fn build_app_info() -> AppInfo {
     AppInfo {
         name: "Pixora",
         version: env!("CARGO_PKG_VERSION"),
-        // Se actualizará en la Fase 3 cuando exista el adaptador libvips.
-        engine: "none",
+        // Motor activo desde la Fase 3.
+        engine: "libvips",
     }
 }
 

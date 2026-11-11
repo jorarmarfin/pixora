@@ -154,7 +154,6 @@ export function SettingsPanel() {
           onChange={(e) => s.patch({ metadata: e.target.value as MetadataPolicy })}
         >
           <option value="strip">{t("settings.metaStrip")}</option>
-          <option value="keep_icc">{t("settings.metaIcc")}</option>
           <option value="keep_all">{t("settings.metaAll")}</option>
         </select>
       </Field>

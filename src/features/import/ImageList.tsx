@@ -4,6 +4,8 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { t } from "@/lib/i18n";
 import { formatBytes } from "@/lib/format";
 import { useImagesStore } from "@/stores/images";
+import { RowActions } from "./RowActions";
+import { RowResult } from "./RowResult";
 import { Thumbnail } from "./Thumbnail";
 
 const ROW_HEIGHT = 64;
@@ -31,7 +33,8 @@ export function ImageList() {
     >
       <div style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
         {virtualizer.getVirtualItems().map((v) => {
-          const { item, status } = entries[v.index];
+          const entry = entries[v.index];
+          const { item } = entry;
           return (
             <div
               key={item.id}
@@ -53,7 +56,8 @@ export function ImageList() {
               <span className="w-20 text-right text-xs text-muted-foreground">
                 {formatBytes(item.size_bytes)}
               </span>
-              <span className="w-24 text-xs">{t(`jobStatus.${status}`)}</span>
+              <RowResult entry={entry} />
+              <RowActions entry={entry} />
               <button
                 type="button"
                 onClick={() => remove(item.id)}

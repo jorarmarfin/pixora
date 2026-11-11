@@ -7,7 +7,7 @@ Aplicación de escritorio **offline-first** para convertir, comprimir, optimizar
 - Node.js LTS (ver `.nvmrc`) y npm
 - Rust estable (`rustup`), `pkg-config`
 - Tauri 2: `sudo apt install libwebkit2gtk-4.1-dev build-essential libssl-dev libxdo-dev libayatana-appindicator3-dev librsvg2-dev`
-- libvips (desde la Fase 3): `sudo apt install libvips-dev`
+- libvips (obligatorio desde la Fase 3): `sudo apt install libvips-dev`
 
 Comprobar entorno: `scripts/check-env.sh`
 

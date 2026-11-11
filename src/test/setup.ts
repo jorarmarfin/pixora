@@ -13,6 +13,7 @@ vi.mock("@/lib/tauri", () => ({
   api: {
     appInfo: vi.fn(),
     importPaths: vi.fn(),
+    processSingle: vi.fn(),
     getThumbnail: vi.fn().mockResolvedValue("data:image/jpeg;base64,AAAA"),
   },
   pickImageFiles: vi.fn().mockResolvedValue([]),

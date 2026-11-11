@@ -145,6 +145,74 @@ pub struct ImageJob {
     pub conflict_policy: ConflictPolicy,
 }
 
+// ---- Resultado de un trabajo ----
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum JobErrorCode {
+    InputNotFound,
+    Unreadable,
+    Corrupt,
+    Unsupported,
+    TooLarge,
+    InvalidOutputDir,
+    PermissionDenied,
+    DiskFull,
+    SourceEqualsDestination,
+    OverwriteNotConfirmed,
+    InvalidOptions,
+    Engine,
+    Io,
+}
+
+/// Error estructurado y apto para mostrar: nunca incluye rutas completas.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct JobError {
+    pub code: JobErrorCode,
+    pub detail: Option<String>,
+}
+
+impl JobError {
+    pub fn new(code: JobErrorCode) -> Self {
+        Self { code, detail: None }
+    }
+    pub fn with_detail(code: JobErrorCode, detail: impl Into<String>) -> Self {
+        Self {
+            code,
+            detail: Some(detail.into()),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct JobResult {
+    pub id: String,
+    pub status: JobStatus,
+    pub output_path: Option<String>,
+    pub width: u32,
+    pub height: u32,
+    pub input_bytes: u64,
+    pub output_bytes: u64,
+    pub duration_ms: u64,
+    pub error: Option<JobError>,
+}
+
+impl JobResult {
+    pub fn failed(id: &str, error: JobError, input_bytes: u64, duration_ms: u64) -> Self {
+        Self {
+            id: id.to_string(),
+            status: JobStatus::Failed,
+            output_path: None,
+            width: 0,
+            height: 0,
+            input_bytes,
+            output_bytes: 0,
+            duration_ms,
+            error: Some(error),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

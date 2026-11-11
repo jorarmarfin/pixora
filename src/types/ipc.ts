@@ -37,3 +37,55 @@ export type FitMode = "contain" | "cover" | "fit";
 export type ConflictPolicy = "rename" | "skip" | "overwrite";
 export type MetadataPolicy = "strip" | "keep_icc" | "keep_all";
 export type ResizeKind = "none" | "width" | "height" | "percent" | "box";
+
+export type ResizeOptionsDto =
+  | { kind: "none" }
+  | { kind: "width"; px: number }
+  | { kind: "height"; px: number }
+  | { kind: "percent"; value: number }
+  | { kind: "box"; width: number; height: number; fit: FitMode };
+
+export interface ImageJob {
+  id: string;
+  input_path: string;
+  output_directory: string;
+  output_format: ImageFormat;
+  quality_mode: QualityMode;
+  quality_value: number;
+  resize: ResizeOptionsDto;
+  metadata_policy: MetadataPolicy;
+  name_suffix: string;
+  conflict_policy: ConflictPolicy;
+}
+
+export type JobErrorCode =
+  | "input_not_found"
+  | "unreadable"
+  | "corrupt"
+  | "unsupported"
+  | "too_large"
+  | "invalid_output_dir"
+  | "permission_denied"
+  | "disk_full"
+  | "source_equals_destination"
+  | "overwrite_not_confirmed"
+  | "invalid_options"
+  | "engine"
+  | "io";
+
+export interface JobError {
+  code: JobErrorCode;
+  detail: string | null;
+}
+
+export interface JobResult {
+  id: string;
+  status: JobStatus;
+  output_path: string | null;
+  width: number;
+  height: number;
+  input_bytes: number;
+  output_bytes: number;
+  duration_ms: number;
+  error: JobError | null;
+}

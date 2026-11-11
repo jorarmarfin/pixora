@@ -21,8 +21,10 @@ if ! pkg-config --exists webkit2gtk-4.1; then
   exit 1
 fi
 
-# libvips se exigirá desde la Fase 3 (motor de imagen):
-# if ! pkg-config --exists vips; then ...; fi
+if ! pkg-config --exists vips; then
+  echo "Pixora: falta libvips (motor de imagen). Instala: sudo apt install libvips-dev" >&2
+  exit 1
+fi
 
 if [[ ! -d node_modules ]]; then
   npm ci

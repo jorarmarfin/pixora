@@ -14,7 +14,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::app::app_info,
             commands::import::import_paths,
-            commands::import::get_thumbnail
+            commands::import::get_thumbnail,
+            commands::process::process_single
         ])
         .run(tauri::generate_context!())
         .expect("error al ejecutar Pixora");
