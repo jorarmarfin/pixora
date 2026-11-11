@@ -3,12 +3,14 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open } from "@tauri-apps/plugin-dialog";
 import type {
+  AppConfig,
   AppInfo,
   BatchProgress,
   BatchReport,
   ImageJob,
   ImportResult,
   JobResult,
+  LoadedConfig,
 } from "@/types/ipc";
 
 /** Cliente tipado de comandos Tauri. */
@@ -26,6 +28,8 @@ export const api = {
     }),
   cancelBatch: () => invoke<boolean>("cancel_batch"),
   revealFolder: (path: string) => invoke<void>("reveal_folder", { path }),
+  loadConfig: () => invoke<LoadedConfig>("load_config"),
+  saveConfig: (config: AppConfig) => invoke<AppConfig>("save_config", { config }),
   getThumbnail: (path: string) => invoke<string>("get_thumbnail", { path }),
 };
 

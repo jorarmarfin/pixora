@@ -15,6 +15,8 @@ vi.mock("@/lib/tauri", () => ({
     importPaths: vi.fn(),
     processSingle: vi.fn(),
     startBatch: vi.fn(),
+    loadConfig: vi.fn(),
+    saveConfig: vi.fn().mockImplementation(async (c) => c),
     cancelBatch: vi.fn().mockResolvedValue(true),
     revealFolder: vi.fn().mockResolvedValue(undefined),
     getThumbnail: vi.fn().mockResolvedValue("data:image/jpeg;base64,AAAA"),

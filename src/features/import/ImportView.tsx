@@ -50,7 +50,7 @@ export function ImportView() {
       {dragging && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl border-2 border-brand-secondary bg-brand-surface/80 text-xl font-semibold"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl border-2 border-brand-secondary bg-background/80 text-xl font-semibold"
         >
           {t("views.dropHere")}
         </div>

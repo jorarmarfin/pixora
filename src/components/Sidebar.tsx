@@ -20,7 +20,7 @@ export function Sidebar() {
         <img src="/logo.png" alt="" className="size-9 rounded-xl" />
         <span className="text-xl font-bold tracking-tight">{t("app.name")}</span>
       </div>
-      <nav aria-label="Principal" className="flex flex-col gap-1">
+      <nav aria-label={t("nav.main")} className="flex flex-col gap-1">
         {items.map(({ id, icon: Icon, label }) => (
           <button
             key={id}

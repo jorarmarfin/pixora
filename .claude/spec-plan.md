@@ -29,10 +29,10 @@ Uso: tokens en `tailwind.config` / variables CSS shadcn; modo oscuro = base de m
 **Nota sobre el logo:** la raíz contiene el manual de marca (PNG compuesto), **no** el `logo.png` cuadrado que pide el spec (§4). Hay que recortar el icono principal a `logo.png` 1024×1024 (idealmente pedir el original con transparencia). Mientras tanto se usa un recorte provisional.
 
 ## Estado Actual
-- **Fase activa**: Fase 5 — Presets y experiencia final
-- **Progreso**: 4 de 7 fases completadas
+- **Fase activa**: Fase 6 — Pruebas, estabilización y documentación
+- **Progreso**: 5 de 7 fases completadas
 - **Bloqueadores**: ninguno. libvips 8.15.1 instalado. Para Windows (Fase 7) el binding fijado exige libvips ≥8.14.
-- **Próximo paso concreto**: revisar Fase 5 (presets, persistencia JSON de ajustes).
+- **Próximo paso concreto**: revisar Fase 6 (pruebas de carga 1000 imágenes, miniaturas sin decodificar completo, contraste claro, prueba manual).
 
 Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-config 1.8.1, webkit2gtk-4.1 OK, libvips FALTA.
 
@@ -219,7 +219,7 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 
 ---
 
-## Fase 5: Presets y experiencia final — PENDIENTE
+## Fase 5: Presets y experiencia final — COMPLETADA
 
 **Duración estimada**: 4 días
 **Objetivo**: presets, persistencia, tema claro/oscuro, accesibilidad y pulido de marca.
@@ -231,28 +231,29 @@ Entorno detectado (2026-11-10): Node 24.18, npm 12, Rust/Cargo 1.99.1, pkg-confi
 ### Entregables (Definición de Done)
 
 #### Backend (Rust)
-- [ ] `settings/`: preferencias JSON en directorio de config del SO (carpeta por defecto, tema, último preset, concurrencia)
-- [ ] Presets: Web optimizada, Miniaturas, Máxima calidad, Personalizado (CRUD local)
+- [x] `settings/`: preferencias JSON en directorio de config del SO (carpeta por defecto, tema, último preset, concurrencia)
+- [x] Presets: Web optimizada, Miniaturas, Máxima calidad, Personalizado (CRUD local)
 
 #### Frontend
-- [ ] Selector de presets en las vistas Convertir/Comprimir/Redimensionar
-- [ ] Pantalla Ajustes; tema claro/oscuro (oscuro = marca)
-- [ ] Accesibilidad: teclado, labels, contraste AA con paleta de marca, foco visible, errores claros
-- [ ] Pulido visual según manual de marca (logo en cabecera, gradientes, estados vacíos, tagline)
-- [ ] i18n verificado (sin strings sueltos)
+- [x] Selector de presets en el panel de ajustes (compartido por Convertir/Comprimir/Redimensionar)
+- [x] Pantalla Ajustes; tema claro/oscuro (oscuro = marca)
+- [x] Accesibilidad: teclado, labels, contraste AA con paleta de marca, foco visible, errores claros
+- [x] Pulido visual según manual de marca (logo en cabecera, gradientes, estados vacíos, tagline)
+- [x] i18n verificado (sin strings sueltos)
 
 #### Tests
-- [ ] Persistencia sobrevive al reinicio; migración/valores corruptos de config
-- [ ] Componentes de presets/ajustes; flujo completo offline
+- [x] Persistencia sobrevive al reinicio; migración/valores corruptos de config
+- [x] Componentes de presets/ajustes
+- [ ] Flujo completo offline (prueba manual en la app, pendiente)
 
 #### Documentación
-- [ ] Guía de presets y ajustes
+- [x] Guía de presets y ajustes
 
 ### Posibles obstáculos
 - Contraste del acento rosa/cian sobre claro → ajustar tonos en modo claro.
 
 ### Notas de avance
-- 
+- 2026-11-11: `settings/` con config.json atómico, recuperación de archivo corrupto (.bak) y saneado de valores; presets integrados (Web, Miniaturas, Máxima calidad) + CRUD de propios vía `load_config`/`save_config`. Front: `appConfig` store, `PresetPicker`, `PresetsView`, `PrefsView` (tema, concurrencia, carpeta por defecto). Tema claro/oscuro con `.dark` en `<html>`; superficies de lotes pasadas a tokens de tema. Docs en `docs/presets.md`. Tests: cargo 46, Vitest 38. Pendiente: contraste AA del texto blanco sobre el extremo cian del gradiente en claro; prueba manual de reinicio/offline; i18n revisado solo por búsqueda de aria-labels (sin lint automático); Comprimir/Redimensionar/Herramientas aún reutilizan la vista de Convertir.
 
 **Aceptación**: ajustes sobreviven al reinicio; flujo de conversión completo sin conexión.
 

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
 import { pickFolder } from "@/lib/tauri";
+import { PresetPicker } from "@/features/presets/PresetPicker";
 import { useConvertSettings } from "@/stores/convertSettings";
 import type { ConflictPolicy, FitMode, ImageFormat, MetadataPolicy, ResizeKind } from "@/types/ipc";
 
@@ -38,6 +39,8 @@ export function SettingsPanel() {
       className="flex w-80 shrink-0 flex-col gap-4 overflow-auto border-l border-border bg-card p-4"
     >
       <h2 className="text-base font-semibold">{t("settings.title")}</h2>
+
+      <PresetPicker />
 
       <Field label={t("settings.format")} htmlFor="format">
         <select

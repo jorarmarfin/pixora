@@ -116,3 +116,39 @@ export interface BatchProgress {
   started: string[];
   finished: JobResult[];
 }
+
+export type Theme = "dark" | "light";
+
+export interface PresetSettings {
+  format: ImageFormat;
+  quality_mode: QualityMode;
+  quality: number;
+  resize_kind: ResizeKind;
+  width: number;
+  height: number;
+  percent: number;
+  fit: FitMode;
+  metadata: MetadataPolicy;
+}
+
+export interface Preset {
+  id: string;
+  name: string;
+  builtin: boolean;
+  settings: PresetSettings;
+}
+
+export interface AppConfig {
+  version: number;
+  theme: Theme;
+  concurrency: number;
+  default_output_dir: string;
+  last_preset_id: string | null;
+  /** Solo presets del usuario. */
+  presets: Preset[];
+}
+
+export interface LoadedConfig extends AppConfig {
+  builtin_presets: Preset[];
+  recovered: boolean;
+}

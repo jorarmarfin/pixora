@@ -20,6 +20,8 @@
   --primary: #6d28d9;
   --primary-foreground: #ffffff;
   --ring: #7c3aed;
+  /* Rosa más oscuro en claro: #ec4899 sobre blanco no llega a AA (3.5:1) */
+  --pixora-accent: #be185d;
 }
 
 .dark {
@@ -32,6 +34,7 @@
   --primary: #7c3aed;
   --primary-foreground: #ffffff;
   --ring: #06b6d4;
+  --pixora-accent: #ec4899;
 }
 
 @theme inline {

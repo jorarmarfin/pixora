@@ -19,7 +19,9 @@ pub fn run() {
             commands::process::process_single,
             commands::batch::start_batch,
             commands::batch::cancel_batch,
-            commands::reveal::reveal_folder
+            commands::reveal::reveal_folder,
+            commands::config::load_config,
+            commands::config::save_config
         ])
         .run(tauri::generate_context!())
         .expect("error al ejecutar Pixora");

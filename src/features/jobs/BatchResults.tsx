@@ -10,7 +10,7 @@ import { useImagesStore } from "@/stores/images";
 
 function Stat({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
   return (
-    <div className="rounded-xl bg-brand-surface-2 px-3 py-2">
+    <div className="rounded-xl bg-muted px-3 py-2">
       <div className={`text-xl font-semibold tabular-nums ${accent ? "text-brand-accent" : ""}`}>
         {value}
       </div>
@@ -30,7 +30,7 @@ export function BatchResults() {
   return (
     <section
       aria-label={t("batch.resultsTitle")}
-      className="space-y-3 rounded-2xl border border-border bg-brand-surface p-4"
+      className="space-y-3 rounded-2xl border border-border bg-card p-4"
     >
       <div className="flex items-center gap-3">
         <h2 className="text-base font-semibold">

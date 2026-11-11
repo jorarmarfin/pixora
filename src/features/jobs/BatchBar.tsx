@@ -26,7 +26,7 @@ export function BatchBar() {
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={pct}
-          className="h-2.5 flex-1 overflow-hidden rounded-full bg-brand-surface-2"
+          className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted"
         >
           <div
             className="h-full rounded-full bg-gradient-to-r from-brand-primary to-brand-secondary transition-[width] duration-200"

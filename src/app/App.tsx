@@ -1,15 +1,31 @@
+import { useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { SettingsPanel } from "@/features/convert/SettingsPanel";
 import { ImportView } from "@/features/import/ImportView";
+import { PresetsView } from "@/features/presets/PresetsView";
+import { PrefsView } from "@/features/settings/PrefsView";
+import { useAppConfig } from "@/stores/appConfig";
+import { useUiStore } from "@/stores/ui";
 
 export default function App() {
+  const section = useUiStore((s) => s.section);
+  useEffect(() => {
+    void useAppConfig.getState().load();
+  }, []);
+
+  const page =
+    section === "settings" ? (
+      <PrefsView />
+    ) : section === "presets" ? (
+      <PresetsView />
+    ) : (
+      <ImportView />
+    );
   return (
-    <div className="dark flex h-screen bg-background text-foreground">
+    <div className="flex h-screen bg-background text-foreground">
       <Sidebar />
-      <main className="min-w-0 flex-1 p-6">
-        <ImportView />
-      </main>
-      <SettingsPanel />
+      <main className="min-w-0 flex-1 overflow-auto p-6">{page}</main>
+      {section !== "settings" && section !== "presets" && <SettingsPanel />}
     </div>
   );
 }

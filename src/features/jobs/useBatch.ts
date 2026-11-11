@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { buildJob } from "@/lib/job";
 import { api, onBatchProgress } from "@/lib/tauri";
 import { useBatchStore } from "@/stores/batch";
+import { useAppConfig } from "@/stores/appConfig";
 import { useConvertSettings } from "@/stores/convertSettings";
 import { useImagesStore } from "@/stores/images";
 import type { BatchProgress, JobResult } from "@/types/ipc";
@@ -31,6 +32,7 @@ export function useBatch() {
       const report = await api.startBatch(
         pending.map((i) => buildJob(i, settings)),
         overwriteConfirmed,
+        useAppConfig.getState().concurrency,
       );
       // El resultado final es la fuente de verdad (el evento puede haberse agrupado).
       report.results.forEach((r: JobResult) => setResult(r.id, r));
