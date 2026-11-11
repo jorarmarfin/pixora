@@ -3,5 +3,5 @@
   "identifier": "default",
   "description": "Capability for the main window (mínimo privilegio)",
   "windows": ["main"],
-  "permissions": ["core:default"]
+  "permissions": ["core:default", "dialog:allow-open"]
 }
