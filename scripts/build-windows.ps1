@@ -10,11 +10,13 @@
 .EXAMPLE
   pwsh scripts/build-windows.ps1
   pwsh scripts/build-windows.ps1 -SkipTests -SkipWebView2
+  pwsh scripts/build-windows.ps1 -Msix   # además del instalador, el .msix para la Store
 #>
 param(
   [string]$VipsHome = $env:VIPSHOME,
   [switch]$SkipTests,
-  [switch]$SkipWebView2
+  [switch]$SkipWebView2,
+  [switch]$Msix   # además genera out\Pixora-X.Y.Z-x64.msix (Microsoft Store)
 )
 $ErrorActionPreference = 'Stop'
 Set-Location (Join-Path $PSScriptRoot '..')
@@ -52,3 +54,5 @@ npm run tauri build -- --no-bundle
 if ($LASTEXITCODE -ne 0) { throw 'tauri build falló' }
 
 & "$PSScriptRoot\package-windows.ps1" -Version $version -VipsHome $VipsHome -SkipWebView2:$SkipWebView2
+
+if ($Msix) { & "$PSScriptRoot\package-msix.ps1" -Version $version }

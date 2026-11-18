@@ -53,9 +53,20 @@ Qué hace: valida versiones, genera las import libs MSVC de libvips (`scripts/ma
 `pixora.exe` con `tauri build --no-bundle` y llama a `scripts/package-windows.ps1` (copia las DLL de libvips junto al exe y compila
 `installer/pixora.iss`). Salida: `out/Pixora-Setup-<versión>-x64.exe`.
 
+### Microsoft Store (MSIX)
+
+Producto reservado en Partner Center como **PixoraL**. Tras generar el instalador:
+
+```powershell
+pwsh scripts/package-msix.ps1 -Version 1.0.0     # o: build-windows.ps1 -Msix
+```
+
+Salida: `out/Pixora-<versión>-x64.msix` (requiere Windows SDK). Se sube **sin firmar** a Partner Center, que lo firma. El manifiesto
+está en `installer/msix/AppxManifest.xml` y la identidad no debe cambiarse. Detalles en [`docs/release.md`](docs/release.md).
+
 ### Release automático (CI)
 
-`.github/workflows/release.yml` compila el instalador de Windows en un runner:
+`.github/workflows/release.yml` compila en un runner de Windows el instalador (Inno Setup) y el paquete `.msix`:
 
 - push a la rama `release` o ejecución manual → artefacto de Actions (sin release pública)
 - tag `vX.Y.Z` → además crea el GitHub Release

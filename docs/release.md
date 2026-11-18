@@ -29,6 +29,18 @@ Licencias: ver `docs/third-party.md` (libvips LGPL-2.1+, enlace dinámico).
 x64, instalación por usuario (sin admin; el usuario puede elegir todos los usuarios), español, acceso directo en menú
 Inicio (y escritorio opcional), desinstalador, instala WebView2 solo si falta. `AppId` es un GUID fijo: **no cambiarlo**.
 
+## Microsoft Store (MSIX)
+Producto en Partner Center: **PixoraL** (el nombre "Pixora" ya estaba tomado). Identidad en `installer/msix/AppxManifest.xml`
+(no cambiar): `Name=LuisMayta.PixoraL`, `Publisher=CN=7B137362-4789-4420-9835-571214DCEF4F`, editor "Luis Mayta".
+- Local (Windows, tras `package-windows.ps1`): `pwsh scripts/package-msix.ps1 -Version X.Y.Z` → `out/Pixora-X.Y.Z-x64.msix`
+  (o `build-windows.ps1 -Msix` hace todo). Requiere Windows SDK (`makeappx.exe`).
+- CI: `release.yml` sube el artefacto `pixora-windows-msix`.
+- Subida: Partner Center → envío → Paquetes → arrastrar el `.msix` **sin firmar** (Microsoft lo firma). La versión MSIX es `X.Y.Z.0`
+  (la Store reserva el 4.º número) y debe aumentar en cada envío.
+- Prueba local: firmar con un certificado de prueba cuyo Subject sea el `Publisher` (`-PfxPath`) e instalarlo antes en la máquina.
+- WebView2: la Store no lo instala; viene con Windows 11 y con Windows 10 actualizado (Evergreen).
+- La ficha (descripción, capturas, categoría, URL de política de privacidad, clasificación por edades) se completa en Partner Center.
+
 ## Firma de código y SmartScreen
 Sin certificado de firma, Windows SmartScreen mostrará "Windows protegió su PC" al ejecutar el instalador
 (*Más información → Ejecutar de todas formas*). Recomendado antes de distribuir ampliamente: certificado de firma de código

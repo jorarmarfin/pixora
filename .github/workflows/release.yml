@@ -77,6 +77,14 @@ jobs:
           name: pixora-windows-installer
           path: out/Pixora-Setup-*-x64.exe
           if-no-files-found: error
+      - name: Paquete MSIX (Microsoft Store, sin firmar; la Store lo firma)
+        shell: pwsh
+        run: ./scripts/package-msix.ps1 -Version "${{ needs.versions.outputs.version }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pixora-windows-msix
+          path: out/Pixora-*-x64.msix
+          if-no-files-found: error
 
   publish:
     if: startsWith(github.ref, 'refs/tags/v')
