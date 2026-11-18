@@ -1,6 +1,6 @@
 [package]
 name = "pixora"
-version = "0.1.0"
+version = "1.0.0"
 description = "Pixora: conversión y optimización de imágenes offline"
 authors = ["Pixora"]
 edition = "2024"
