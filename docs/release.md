@@ -19,6 +19,7 @@ Licencias: ver `docs/third-party.md` (libvips LGPL-2.1+, enlace dinámico).
    (único job con `contents: write`).
 
 ## Build local
+- Atajos: `npm run build:linux` (`scripts/build-linux.sh`, genera el .deb) y `npm run build:windows` (`scripts/build-windows.ps1`, solo en Windows; compila exe + instalador).
 - Linux: `npm run tauri build -- --bundles deb` → `src-tauri/target/release/bundle/deb/`.
 - Windows (PowerShell, con libvips en `$env:VIPSHOME`, pkg-config e Inno Setup 6):
   `npm run tauri build -- --no-bundle; pwsh scripts/package-windows.ps1 -Version X.Y.Z` → `out/Pixora-Setup-X.Y.Z-x64.exe`.

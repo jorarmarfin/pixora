@@ -12,7 +12,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "format": "prettier --write .",
-    "check:versions": "node scripts/check-versions.mjs"
+    "check:versions": "node scripts/check-versions.mjs",
+    "build:linux": "bash scripts/build-linux.sh",
+    "build:windows": "pwsh scripts/build-windows.ps1"
   },
   "dependencies": {
     "@fontsource-variable/outfit": "^5.3.0",
